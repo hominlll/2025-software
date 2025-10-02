@@ -1,16 +1,16 @@
 import React from 'react';
+import './Header.css';
 
 const Header = () => {
   return (
-    <header style={{display:'flex', justifyContent:'space-between', padding:'10px 50px', alignItems:'center', borderBottom:'1px solid #ccc'}}>
-      <h1 style={{color:'#27ae60'}}>Inflearn</h1>
-      <nav>
-        <button>강의</button>
-        <button>챌린지</button>
-        <button>멘토링</button>
-        <button>로드맵</button>
-        <button>지식공유</button>
-        <button>로그인</button>
+    <header className="header">
+      <h1 className="logo">Growe</h1>
+      <nav className="nav">
+        <button className="image-button" onClick={() => alert("메뉴 열기!")}>
+          <img src="/img/setting.png" alt="메뉴 버튼" className="button-image" />
+        </button>
+        <button className="login-button"onClick={() => alert("로그인!")}
+          >로그인</button>
       </nav>
     </header>
   );

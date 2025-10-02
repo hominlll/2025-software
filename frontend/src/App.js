@@ -12,6 +12,7 @@ function App() {
       <CategoryMenu />
       <Home />
       <Banner />
+      <MentorSection />
     </div>
   );
 }
