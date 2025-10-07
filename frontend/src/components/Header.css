@@ -1,7 +1,7 @@
 /* header 전체 */
 .header {
   display: flex;
-  flex-direction: column; 
+  flex-direction: column;
   align-items: center;
   padding: 10px 50px;
   border-bottom: 1px solid #ccc;
@@ -11,45 +11,31 @@
 .header-top {
   width: 100%;
   display: flex;
-  justify-content: space-between; /* 좌우 끝 배치 */
+  justify-content: space-between; /* 좌우 배치 */
   align-items: center;
-  position: relative;
 }
 
 /* 중앙 버튼 그룹 */
-.top-center-buttons {
-  display: flex;
-  gap: 20px;
+.center-nav {
   position: absolute;
   left: 50%;
   transform: translateX(-50%);
-}
-
-/* 상단 로고 */
-.logo {
-  color: #27ae60;
-  margin: 0;
-}
-
-/* 메뉴 (오른쪽) */
-.nav {
   display: flex;
+  gap: 20px;
   align-items: center;
-  gap: 15px;
 }
 
-/* 버튼 스타일 유지 */
+/* 버튼 스타일 */
 .center-button {
   display: flex;
-  flex-direction: row;
-  justify-content: center;
   align-items: center;
+  justify-content: center;
   gap: 10px;
   width: 150px;
   height: 60px;
-  background-color: #ffffff;
-  border: none;
-  border-radius: 40px;
+  border-radius: 20px;
+  border: 2px solid transparent;
+  background-color: #fff;
   cursor: pointer;
   font-size: 18px;
   font-weight: 600;
@@ -57,23 +43,30 @@
   transition: all 0.3s ease;
 }
 
+.center-button.active {
+  border-color: #27ae60;
+  color: #27ae60;
+}
+
 .center-button:hover {
   background-color: #e2e2e2;
-  transform: scale(1.05);
 }
 
-.center-icon {
+.center-button .center-icon {
   width: 30px;
   height: 30px;
-  object-fit: contain;
 }
 
-/* 오른쪽 메뉴 버튼 */
+/* 오른쪽 메뉴 */
+.nav {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
 .image-button {
   width: 60px;
   height: 60px;
-  min-width: 60px;
-  min-height: 60px;
   border-radius: 30px;
   display: flex;
   justify-content: center;
@@ -94,10 +87,10 @@
   height: 60px;
   background-color: #f5f5f5;
   border: none;
-  color: black;
   border-radius: 30px;
   cursor: pointer;
   font-size: 20px;
+  color: #000000;
 }
 
 .image-button:hover,
@@ -106,21 +99,15 @@
 }
 
 /* 검색창 */
-.search-wrapper {
-  display: flex;
-  justify-content: center;
-  width: 100%;
-  margin-top: 15px;
-}
-
 .search-container {
   display: flex;
   align-items: center;
   width: 600px;
   height: 60px;
   border-radius: 40px;
+  margin-top: 15px;
   overflow: hidden;
-  background-color: #ffffff;
+  background-color: #fff;
   border: 1px solid #ccc;
 }
 
