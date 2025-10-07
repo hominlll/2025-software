@@ -1,27 +1,80 @@
+/* header 전체 */
 .header {
   display: flex;
-  justify-content: space-between;
+  flex-direction: column; 
   align-items: center;
   padding: 10px 50px;
   border-bottom: 1px solid #ccc;
 }
 
+/* 상단 로고 + 중앙 버튼 + 메뉴 */
+.header-top {
+  width: 100%;
+  display: flex;
+  justify-content: space-between; /* 좌우 끝 배치 */
+  align-items: center;
+  position: relative;
+}
+
+/* 중앙 버튼 그룹 */
+.top-center-buttons {
+  display: flex;
+  gap: 20px;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+/* 상단 로고 */
 .logo {
   color: #27ae60;
   margin: 0;
 }
 
+/* 메뉴 (오른쪽) */
 .nav {
   display: flex;
   align-items: center;
   gap: 15px;
 }
 
-/* 사각형 버튼 */
+/* 버튼 스타일 유지 */
+.center-button {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  width: 150px;
+  height: 60px;
+  background-color: #ffffff;
+  border: none;
+  border-radius: 40px;
+  cursor: pointer;
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+  transition: all 0.3s ease;
+}
+
+.center-button:hover {
+  background-color: #e2e2e2;
+  transform: scale(1.05);
+}
+
+.center-icon {
+  width: 30px;
+  height: 30px;
+  object-fit: contain;
+}
+
+/* 오른쪽 메뉴 버튼 */
 .image-button {
-  width: 60px;          /* 버튼 가로 크기 */
-  height: 60px;         /* 버튼 세로 크기 */
-  border-radius: 30px;     /* 모서리 둥글기 조절 가능 */
+  width: 60px;
+  height: 60px;
+  min-width: 60px;
+  min-height: 60px;
+  border-radius: 30px;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -30,16 +83,13 @@
   padding: 0;
 }
 
-/* 버튼 안 이미지 */
 .button-image {
-  width: 30px;          /* 이미지 가로 크기 */
-  height: 30px;         /* 이미지 세로 크기 */
-  object-fit: contain;   /* 이미지 비율 유지 */
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
 }
 
-/* 로그인 버튼 */
 .login-button {
-  /*padding: 20px 40px;*/
   width: 120px;
   height: 60px;
   background-color: #f5f5f5;
@@ -47,13 +97,63 @@
   color: black;
   border-radius: 30px;
   cursor: pointer;
-  font-size: 20px; 
+  font-size: 20px;
 }
 
-.image-button:hover {
-  background-color: #e2e2e2; /* 기존 색 */
-}
-
+.image-button:hover,
 .login-button:hover {
-  background-color: #e2e2e2; /* 기존 색 */
+  background-color: #e2e2e2;
+}
+
+/* 검색창 */
+.search-wrapper {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  margin-top: 15px;
+}
+
+.search-container {
+  display: flex;
+  align-items: center;
+  width: 600px;
+  height: 60px;
+  border-radius: 40px;
+  overflow: hidden;
+  background-color: #ffffff;
+  border: 1px solid #ccc;
+}
+
+.search-input {
+  flex: 1;
+  height: 100%;
+  border: none;
+  outline: none;
+  padding: 0 15px;
+  font-size: 16px;
+  background-color: transparent;
+}
+
+.search-button {
+  width: 50px;
+  height: 50px;
+  border: none;
+  border-radius: 40px;
+  background-color: #27ae60;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 8px;
+  transition: all 0.3s ease;
+}
+
+.search-button img {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+}
+
+.search-button:hover {
+  background-color: #219150;
 }
