@@ -3,8 +3,21 @@ import './Header.css';
 import LoginModal from './LoginModal';
 
 const Header = () => {
-  const [selected, setSelected] = useState('mentoring'); // 선택된 버튼: 'study' 또는 'mentoring'
-  const [showModal, setShowModal] = useState(false); //로그인 모달 상태 추가
+  const [selected, setSelected] = useState('mentoring');
+  const [showModal, setShowModal] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false); // ✅ 로그인 상태 추가
+
+  // 로그인 성공 시 실행
+  const handleLoginSuccess = () => {
+    setIsLoggedIn(true);
+    setShowModal(false);
+  };
+
+  // 로그아웃 시 실행
+  const handleLogout = () => {
+    setIsLoggedIn(false);
+    alert("로그아웃되었습니다.");
+  };
 
   return (
     <header className="header">
@@ -33,18 +46,31 @@ const Header = () => {
           </button>
         </div>
 
-        {/* 오른쪽: 설정 + 로그인 */}
+        {/* 오른쪽: 설정 + 로그인/로그아웃 */}
         <nav className="nav">
           <button className="image-button" onClick={() => alert("메뉴 열기!")}>
             <img src="/img/setting.png" alt="설정" className="button-image" />
           </button>
-          <button className="login-button" onClick={() => setShowModal(true)}>
-            로그인
-          </button>
+
+          {/* 로그인 상태에 따라 표시되는 버튼 변경 */}
+          {!isLoggedIn ? (
+            <button className="login-button" onClick={() => setShowModal(true)}>
+              로그인
+            </button>
+          ) : (
+            <>
+              <button className="mypage-button" onClick={() => alert("내 정보 페이지로 이동!")}>
+                내 정보
+              </button>
+              <button className="logout-button" onClick={handleLogout}>
+                로그아웃
+              </button>
+            </>
+          )}
         </nav>
       </div>
 
-      {/* 검색창: header-top 아래 */}
+      {/* 검색창 */}
       <div className="search-container">
         <input type="text" className="search-input" placeholder="검색어를 입력하세요..." />
         <button className="search-button" onClick={() => alert("검색!")}>
@@ -53,7 +79,12 @@ const Header = () => {
       </div>
 
       {/* ✅ 로그인 모달 표시 */}
-      {showModal && <LoginModal onClose={() => setShowModal(false)} />}
+      {showModal && (
+        <LoginModal
+          onClose={() => setShowModal(false)}
+          onLoginSuccess={handleLoginSuccess} // ✅ 로그인 성공 시 호출
+        />
+      )}
     </header>
   );
 };

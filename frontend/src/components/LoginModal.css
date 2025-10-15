@@ -1,3 +1,4 @@
+/* 모달 전체 배경 */
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -6,72 +7,91 @@
   height: 100%;
   background: rgba(0, 0, 0, 0.5);
   display: flex;
-  align-items: center;
-  justify-content: center;
+  align-items: center;       /* 세로 중앙 */
+  justify-content: center;   /* 가로 중앙 */
   z-index: 999;
 }
 
+/* 모달 컨테이너 */
 .modal-container {
   background: #fff;
-  width: 360px;
-  padding: 30px 20px;
+  width: 600px;
+  min-height: 650px;
+  padding: 40px 30px;
   border-radius: 16px;
-  width: 400px;
-  min-height: 450px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;  /* 세로 중앙 정렬 */
+  align-items: center;      /* 가로 중앙 정렬 */
   text-align: center;
+  overflow-y: auto;         /* 내용 많으면 스크롤 */
 }
 
+/* 로고 */
 .modal-logo {
-  width: 100px;
+  width: 200px;
   height: auto;
-  margin-bottom: 20px;
+  margin-bottom: 40px;
 }
 
+/* 폼 */
 .login-form {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 20px;
+  width: 80%;               /* 모달 폭 80% */
+  margin-bottom: 30px;
 }
 
+/* 입력창 */
 .login-form input {
-  padding: 10px;
+  padding: 15px;
   border: 1px solid #ccc;
-  border-radius: 8px;
-  font-size: 14px;
+  border-radius: 10px;
+  font-size: 16px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
+/* 로그인 / 회원가입 버튼 */
 .login-btn {
   background-color: #27ae60;
-  color: white;
+  color: #fff;
   border: none;
-  padding: 10px;
-  border-radius: 8px;
-  font-size: 15px;
+  padding: 15px;
+  border-radius: 10px;
+  font-size: 16px;
   font-weight: bold;
   cursor: pointer;
-  transition: 0.2s;
+  transition: background-color 0.2s;
 }
 
 .login-btn:hover {
   background-color: #219150;
 }
 
+/* 하단 링크 버튼 */
 .login-links {
   display: flex;
-  justify-content: space-around;
-  margin-top: 18px;
+  justify-content: center; /* 중앙 정렬 */
+  gap: 20px;               /* 버튼 사이 간격 */
+  flex-wrap: wrap;         /* 화면 작으면 줄바꿈 */
 }
 
+/* 링크 버튼 스타일 */
 .link-btn {
-  background: none;
+  background: transparent;
   border: none;
-  color: #27ae60;
-  font-size: 13px;
+  color: #000;
+  font-size: 16px;
   cursor: pointer;
-  transition: 0.2s;
+  transition: none;
 }
 
 .link-btn:hover {
-  text-decoration: underline;
+  background: transparent; /* hover 시 배경 투명 */
+  color: #000;             /* 색 변화 없음 */
+  text-decoration: none;   /* 밑줄 없음 */
 }
