@@ -1,14 +1,18 @@
 import React, { useState } from 'react';
 import './Header.css';
+import LoginModal from './LoginModal';
 
 const Header = () => {
   const [selected, setSelected] = useState('mentoring'); // 선택된 버튼: 'study' 또는 'mentoring'
+  const [showModal, setShowModal] = useState(false); //로그인 모달 상태 추가
 
   return (
     <header className="header">
       <div className="header-top">
         {/* 왼쪽: 로고 */}
-        <h1 className="logo">Growe</h1>
+        <h1 className="logo">
+          <img src="/img/logo.png" alt="로고" className="logo-img" />
+        </h1>
 
         {/* 가운데: 스터디/멘토링 */}
         <div className="center-nav">
@@ -34,7 +38,7 @@ const Header = () => {
           <button className="image-button" onClick={() => alert("메뉴 열기!")}>
             <img src="/img/setting.png" alt="설정" className="button-image" />
           </button>
-          <button className="login-button" onClick={() => alert("로그인!")}>
+          <button className="login-button" onClick={() => setShowModal(true)}>
             로그인
           </button>
         </nav>
@@ -47,6 +51,9 @@ const Header = () => {
           <img src="/img/search.svg" alt="검색" />
         </button>
       </div>
+
+      {/* ✅ 로그인 모달 표시 */}
+      {showModal && <LoginModal onClose={() => setShowModal(false)} />}
     </header>
   );
 };
