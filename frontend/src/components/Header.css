@@ -89,7 +89,9 @@
   object-fit: contain;
 }
 
-.login-button {
+.login-button,
+.mypage-button,
+.logout-button {
   width: 120px;
   height: 60px;
   background-color: #f5f5f5;
@@ -99,6 +101,7 @@
   font-size: 20px;
   color: #000000;
 }
+
 
 .image-button:hover,
 .login-button:hover {

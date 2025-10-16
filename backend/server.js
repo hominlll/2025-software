@@ -1,85 +1,135 @@
-const express = require("express");
-const mysql = require("mysql2");
-const bodyParser = require("body-parser");
-const cors = require("cors");
+import React, { useState } from "react";
+import axios from "axios";
+import "./LoginModal.css";
 
-const app = express();
-const PORT = 5000;
+const LoginModal = ({ onClose, onLoginSuccess }) => {
+  const [formType, setFormType] = useState("login"); // login | signup | findId | findPassword
+  const [formData, setFormData] = useState({ userId: "", password: "", email: "" });
+  const [resultMessage, setResultMessage] = useState(""); // 서버 응답 메시지 표시용
 
-app.use(cors());
-app.use(bodyParser.json());
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
 
-// MySQL 연결
-const db = mysql.createConnection({
-  host: "localhost",
-  user: "root",
-  password: "hm09080908",
-  database: "login_demo"
-});
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setResultMessage(""); // 결과 초기화
 
-db.connect((err) => {
-  if (err) {
-    console.error("DB 연결 실패:", err);
-  } else {
-    console.log("DB 연결 성공");
-  }
-});
+    try {
+      let url = "";
+      let requestData = {};
 
-// 회원가입
-app.post("/api/signup", (req, res) => {
-  const { userId, password, email } = req.body;
-  db.query(
-    "INSERT INTO users (userId, password, email) VALUES (?, ?, ?)",
-    [userId, password, email],
-    (err, results) => {
-      if (err) {
-        console.error(err);
-        return res.json({ success: false, message: "회원가입 실패" });
+      if (formType === "login") {
+        url = "http://localhost:5000/login";
+        requestData = { userId: formData.userId, password: formData.password };
+      } else if (formType === "signup") {
+        url = "http://localhost:5000/signup";
+        requestData = { userId: formData.userId, password: formData.password, email: formData.email };
+      } else if (formType === "findId") {
+        url = "http://localhost:5000/find-id";
+        requestData = { email: formData.email };
+      } else if (formType === "findPassword") {
+        url = "http://localhost:5000/find-password";
+        requestData = { userId: formData.userId, email: formData.email };
       }
-      res.json({ success: true });
+
+      const response = await axios.post(url, requestData);
+      const data = response.data;
+
+      if (data.success) {
+        if (formType === "login") {
+          setResultMessage("✅ 로그인 성공!");
+          if (onLoginSuccess) onLoginSuccess();
+          setTimeout(() => onClose(), 1200);
+        } else if (formType === "signup") {
+          setResultMessage("✅ 회원가입 완료! 로그인 해주세요.");
+          setFormType("login");
+        } else if (formType === "findId") {
+          setResultMessage(`🔍 아이디: ${data.userId}`);
+        } else if (formType === "findPassword") {
+          setResultMessage(`🔐 비밀번호: ${data.password}`);
+        }
+      } else {
+        setResultMessage(`❌ ${data.message}`);
+      }
+    } catch (err) {
+      console.error(err);
+      setResultMessage("⚠️ 서버 오류가 발생했습니다.");
     }
+  };
+
+  // 폼 전환 시 메시지 초기화
+  const handleFormChange = (type) => {
+    setFormType(type);
+    setResultMessage("");
+    setFormData({ userId: "", password: "", email: "" });
+  };
+
+  const renderForm = () => {
+    switch (formType) {
+      case "login":
+        return (
+          <>
+            <form onSubmit={handleSubmit} className="login-form">
+              <input type="text" name="userId" placeholder="아이디" value={formData.userId} onChange={handleChange} required />
+              <input type="password" name="password" placeholder="비밀번호" value={formData.password} onChange={handleChange} required />
+              <button type="submit" className="login-btn">로그인</button>
+            </form>
+            <div className="login-links">
+              <button className="link-btn" onClick={() => handleFormChange("signup")}>회원가입</button>
+              <button className="link-btn" onClick={() => handleFormChange("findId")}>아이디 찾기</button>
+              <button className="link-btn" onClick={() => handleFormChange("findPassword")}>비밀번호 찾기</button>
+            </div>
+          </>
+        );
+      case "signup":
+        return (
+          <>
+            <form onSubmit={handleSubmit} className="login-form">
+              <input type="text" name="userId" placeholder="아이디" value={formData.userId} onChange={handleChange} required />
+              <input type="password" name="password" placeholder="비밀번호" value={formData.password} onChange={handleChange} required />
+              <input type="email" name="email" placeholder="이메일" value={formData.email} onChange={handleChange} required />
+              <button type="submit" className="login-btn">회원가입</button>
+            </form>
+            <button className="link-btn" onClick={() => handleFormChange("login")}>로그인 화면으로</button>
+          </>
+        );
+      case "findId":
+        return (
+          <>
+            <form onSubmit={handleSubmit} className="login-form">
+              <input type="email" name="email" placeholder="가입한 이메일 입력" value={formData.email} onChange={handleChange} required />
+              <button type="submit" className="login-btn">아이디 찾기</button>
+            </form>
+            <button className="link-btn" onClick={() => handleFormChange("login")}>로그인 화면으로</button>
+          </>
+        );
+      case "findPassword":
+        return (
+          <>
+            <form onSubmit={handleSubmit} className="login-form">
+              <input type="text" name="userId" placeholder="아이디 입력" value={formData.userId} onChange={handleChange} required />
+              <input type="email" name="email" placeholder="가입한 이메일 입력" value={formData.email} onChange={handleChange} required />
+              <button type="submit" className="login-btn">비밀번호 찾기</button>
+            </form>
+            <button className="link-btn" onClick={() => handleFormChange("login")}>로그인 화면으로</button>
+          </>
+        );
+      default:
+        return null;
+    }
+  };
+
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-container" onClick={(e) => e.stopPropagation()}>
+        <img src="/img/logo.png" alt="로고" className="modal-logo" />
+        {/* 메시지 항상 로고 바로 아래 */}
+        {resultMessage && <p className="result-message">{resultMessage}</p>}
+        {renderForm()}
+      </div>
+    </div>
   );
-});
+};
 
-// 로그인
-app.post("/api/signup", async (req, res) => {
-  const { userId, password, email } = req.body;
-
-  if (!userId || !password || !email) {
-    return res.json({ success: false, message: "모든 필드를 입력해주세요." });
-  }
-
-  const sql = "INSERT INTO users (userId, password, email) VALUES (?, ?, ?)";
-  try {
-    await db.query(sql, [userId, password, email]);
-    res.json({ success: true, message: "회원가입이 완료되었습니다!" });
-  } catch (error) {
-    console.error(error);
-    res.json({ success: false, message: "이미 존재하는 아이디입니다." });
-  }
-});
-// 아이디
-app.post("/api/find-id", async (req, res) => {
-  const { email } = req.body;
-  const [rows] = await db.query("SELECT userId FROM users WHERE email = ?", [email]);
-  if (rows.length > 0) {
-    res.json({ success: true, message: `당신의 아이디는 ${rows[0].userId} 입니다.` });
-  } else {
-    res.json({ success: false, message: "해당 이메일로 가입된 계정이 없습니다." });
-  }
-});
-// 비밀번호
-app.post("/api/find-password", async (req, res) => {
-  const { userId, email } = req.body;
-  const [rows] = await db.query("SELECT password FROM users WHERE userId = ? AND email = ?", [userId, email]);
-  if (rows.length > 0) {
-    res.json({ success: true, message: `비밀번호는 ${rows[0].password} 입니다.` });
-  } else {
-    res.json({ success: false, message: "일치하는 계정 정보가 없습니다." });
-  }
-});
-
-
-app.listen(PORT, () => {
-  console.log(`서버 실행: http://localhost:${PORT}`);
-});
+export default LoginModal;
