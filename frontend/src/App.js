@@ -1,19 +1,39 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Header from './components/Header';
 import CategoryMenu from './components/CategoryMenu';
-import MentorSection from './components/MentorSection';
 import Banner from './components/Banner';
+import MentorSection from './components/MentorSection';
 import Home from './pages/Home';
+import MyPage from './pages/MyPage';
 
 function App() {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
   return (
-    <div>
-      <Header />
-      <CategoryMenu />
-      <Home />
-      <Banner />
-      <MentorSection />
-    </div>
+    <Router>
+      <Routes>
+        {/* 홈 화면 */}
+        <Route
+          path="/"
+          element={
+            <>
+              <Header isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn} />
+              <CategoryMenu />
+              <Banner />
+              <MentorSection />
+              <Home />
+            </>
+          }
+        />
+
+        {/* 마이페이지 - 완전히 독립 */}
+        <Route
+          path="/mypage"
+          element={isLoggedIn ? <MyPage /> : <Navigate to="/" replace />}
+        />
+      </Routes>
+    </Router>
   );
 }
 

@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom'; // ✅ 추가
 import './Header.css';
 import LoginModal from './LoginModal';
 
-const Header = () => {
+const Header = ({ isLoggedIn, setIsLoggedIn }) => {
   const [selected, setSelected] = useState('mentoring');
-  const [showModal, setShowModal] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false); // ✅ 로그인 상태 추가
+  const [showModal, setShowModal] = useState(false); // 모달 상태만 내부에서 관리
+  const navigate = useNavigate();
 
   // 로그인 성공 시 실행
   const handleLoginSuccess = () => {
@@ -17,6 +18,11 @@ const Header = () => {
   const handleLogout = () => {
     setIsLoggedIn(false);
     alert("로그아웃되었습니다.");
+  };
+
+  // ✅ 마이페이지 이동
+  const handleMyPage = () => {
+    navigate('/mypage');
   };
 
   return (
@@ -59,9 +65,11 @@ const Header = () => {
             </button>
           ) : (
             <>
-              <button className="mypage-button" onClick={() => alert("내 정보 페이지로 이동!")}>
+              {/* ✅ 마이페이지 이동 버튼 수정 */}
+              <button className="mypage-button" onClick={() => navigate('/mypage')}>
                 내 정보
               </button>
+
               <button className="logout-button" onClick={handleLogout}>
                 로그아웃
               </button>
