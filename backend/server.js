@@ -1,143 +1,160 @@
-const express = require("express");
-const mysql = require("mysql2");
-const cors = require("cors");
-const bodyParser = require("body-parser");
-const session = require("express-session");
+import express from "express";
+import cors from "cors";
+import mysql from "mysql2";
+import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
+import bodyParser from "body-parser";
 
 const app = express();
+const SECRET_KEY = "your_secret_key"; // JWT 비밀키
 
-// ✅ CORS 설정 (React 개발 주소 모두 허용)
-app.use(
-  cors({
-    origin: ["http://localhost:3000", "http://127.0.0.1:3000"], // React 실행 주소
-    credentials: true, // 쿠키, 세션 허용
-  })
-);
-
+app.use(cors());
 app.use(bodyParser.json());
-
-// ✅ 세션 설정
-app.use(
-  session({
-    secret: "super-secret-key",
-    resave: false,
-    saveUninitialized: false, // 불필요한 빈 세션 방지
-    cookie: {
-      httpOnly: true,
-      secure: false, // HTTPS가 아니므로 false
-      sameSite: "lax", // 크로스도메인에서도 쿠키 유지
-      maxAge: 1000 * 60 * 60, // 1시간 유지
-    },
-  })
-);
 
 // ✅ MySQL 연결
 const db = mysql.createConnection({
   host: "localhost",
   user: "root",
-  password: "hm09080908",
+  password: "hm09080908", // 🔹 실제 MySQL 비밀번호 확인 필요
   database: "login_db",
 });
 
+// ✅ DB 연결 확인
 db.connect((err) => {
   if (err) {
-    console.error("❌ DB 연결 실패:", err);
+    console.error("❌ MySQL 연결 실패:", err);
   } else {
-    console.log("✅ MySQL 연결 성공!");
+    console.log("✅ MySQL 연결 성공");
+  }
+});
+
+// ✅ 회원가입
+app.post("/api/signup", async (req, res) => {
+  const { userId, password, email, name, nickname } = req.body;
+
+  try {
+    if (!userId || !password || !email || !name || !nickname) {
+      return res.json({ success: false, message: "모든 필드를 입력해주세요." });
+    }
+
+    // 아이디 중복 확인
+    const [exist] = await db.promise().query("SELECT * FROM users WHERE userId = ?", [userId]);
+    if (exist.length > 0) {
+      return res.json({ success: false, message: "이미 존재하는 아이디입니다." });
+    }
+
+    // 이메일 중복 확인
+    const [emailExist] = await db.promise().query("SELECT * FROM users WHERE email = ?", [email]);
+    if (emailExist.length > 0) {
+      return res.json({ success: false, message: "이미 가입된 이메일입니다." });
+    }
+
+    // 비밀번호 해싱 후 저장
+    const hashedPassword = await bcrypt.hash(password, 10);
+    await db
+      .promise()
+      .query(
+        "INSERT INTO users (userId, password, email, name, nickname) VALUES (?, ?, ?, ?, ?)",
+        [userId, hashedPassword, email, name, nickname]
+      );
+
+    res.json({ success: true, message: "회원가입 완료!" });
+  } catch (err) {
+    console.error("❌ 회원가입 오류:", err);
+    res.status(500).json({ success: false, message: "서버 오류 발생" });
   }
 });
 
 // ✅ 로그인
-app.post("/login", (req, res) => {
+app.post("/api/login", async (req, res) => {
   const { userId, password } = req.body;
-  const sql = "SELECT * FROM users WHERE userId = ? AND password = ?";
 
-  db.query(sql, [userId, password], (err, result) => {
-    if (err) {
-      console.error("❌ 로그인 오류:", err);
-      return res.status(500).json({ success: false, message: "서버 오류 발생" });
+  try {
+    const [rows] = await db.promise().query("SELECT * FROM users WHERE userId = ?", [userId]);
+    if (rows.length === 0) {
+      return res.json({ success: false, message: "존재하지 않는 아이디입니다." });
     }
 
-    if (result.length > 0) {
-      const user = result[0];
-
-      // ✅ 세션 저장
-      req.session.user = {
-        id: user.id,
-        userId: user.userId,
-        name: user.name,
-        email: user.email,
-        nickname: user.nickname,
-        join_date: user.join_date,
-        isAdmin: user.userId === "admin",
-      };
-
-      console.log("✅ 로그인 성공:", req.session.user);
-      res.json({ success: true, message: "로그인 성공", user: req.session.user });
-    } else {
-      res.json({ success: false, message: "아이디 또는 비밀번호가 일치하지 않습니다." });
+    const user = rows[0];
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.json({ success: false, message: "비밀번호가 일치하지 않습니다." });
     }
-  });
-});
 
-// ✅ 로그아웃
-app.post("/logout", (req, res) => {
-  req.session.destroy(() => {
-    res.json({ success: true, message: "로그아웃 성공" });
-  });
-});
+    const token = jwt.sign({ id: user.id, userId: user.userId }, SECRET_KEY, { expiresIn: "1h" });
 
-// ✅ 로그인된 사용자 정보 확인
-app.get("/api/user/info", (req, res) => {
-  if (!req.session.user) {
-    return res.status(401).json({ success: false, message: "로그인이 필요합니다." });
+    res.json({ success: true, user, token });
+  } catch (err) {
+    console.error("❌ 로그인 오류:", err);
+    res.status(500).json({ success: false, message: "서버 오류 발생" });
   }
-  res.json({ success: true, user: req.session.user });
 });
 
-// ✅ 관리자용 전체 사용자 목록
-app.get("/api/admin/users", (req, res) => {
-  if (!req.session.user || !req.session.user.isAdmin) {
-    return res.status(403).json({ success: false, message: "관리자만 접근 가능합니다." });
+// ✅ 아이디 찾기
+app.post("/api/find-id", async (req, res) => {
+  const { email } = req.body;
+
+  try {
+    const [rows] = await db.promise().query("SELECT userId FROM users WHERE email = ?", [email]);
+    if (rows.length === 0) {
+      return res.json({ success: false, message: "해당 이메일로 가입된 계정이 없습니다." });
+    }
+
+    res.json({ success: true, userId: rows[0].userId });
+  } catch (err) {
+    console.error("❌ 아이디 찾기 오류:", err);
+    res.status(500).json({ success: false, message: "서버 오류 발생" });
   }
-
-  const sql = "SELECT id, userId, email, name, nickname, join_date FROM users";
-  db.query(sql, (err, result) => {
-    if (err) {
-      console.error("❌ 관리자 사용자 조회 오류:", err);
-      return res.status(500).json({ success: false, message: "서버 오류" });
-    }
-    res.json({ success: true, users: result });
-  });
 });
 
-// ✅ 회원가입
-app.post("/signup", (req, res) => {
-  const { userId, password, email } = req.body;
+// ✅ 비밀번호 찾기
+app.post("/api/find-password", async (req, res) => {
+  const { userId, email } = req.body;
 
-  const checkSql = "SELECT * FROM users WHERE userId = ? OR email = ?";
-  db.query(checkSql, [userId, email], (err, result) => {
-    if (err) {
-      console.error("❌ 중복 검사 오류:", err);
-      return res.status(500).json({ success: false, message: "서버 오류 발생" });
+  try {
+    const [rows] = await db
+      .promise()
+      .query("SELECT password FROM users WHERE userId = ? AND email = ?", [userId, email]);
+
+    if (rows.length === 0) {
+      return res.json({ success: false, message: "정보가 일치하지 않습니다." });
     }
 
-    if (result.length > 0) {
-      return res.json({ success: false, message: "이미 존재하는 아이디 또는 이메일입니다." });
-    }
-
-    const insertSql = "INSERT INTO users (userId, password, email) VALUES (?, ?, ?)";
-    db.query(insertSql, [userId, password, email], (err) => {
-      if (err) {
-        console.error("❌ 회원가입 오류:", err);
-        return res.status(500).json({ success: false, message: "회원가입 실패" });
-      }
-      res.json({ success: true, message: "회원가입 성공" });
+    res.json({
+      success: true,
+      password: "비밀번호는 보안상 표시되지 않습니다. 관리자에게 문의하세요.",
     });
-  });
+  } catch (err) {
+    console.error("❌ 비밀번호 찾기 오류:", err);
+    res.status(500).json({ success: false, message: "서버 오류 발생" });
+  }
 });
+
+// ✅ 사용자 정보 불러오기 (수정 완료)
+app.post("/api/user-info", async (req, res) => {
+  const token = req.headers.authorization?.split(" ")[1];
+  if (!token) return res.status(401).json({ success: false, message: "토큰이 없습니다." });
+
+  try {
+    const decoded = jwt.verify(token, SECRET_KEY);
+    const { userId } = req.body;
+
+    const [rows] = await db
+      .promise()
+      .query("SELECT userId, email, name, nickname, join_date FROM users WHERE userId = ?", [userId]);
+
+    if (rows.length === 0)
+      return res.status(404).json({ success: false, message: "사용자를 찾을 수 없습니다." });
+
+    res.json(rows[0]); // ✅ 프론트에서 userInfo로 바로 받기 위해
+  } catch (err) {
+    console.error("❌ 유저 정보 조회 오류:", err);
+    res.status(500).json({ success: false, message: "서버 오류 발생" });
+  }
+});
+
 
 // ✅ 서버 실행
 app.listen(5000, () => {
-  console.log("🚀 서버 실행 중: http://localhost:5000");
+  console.log("🚀 Server running on http://localhost:5000");
 });

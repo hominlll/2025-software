@@ -4,8 +4,14 @@ import "./LoginModal.css";
 
 const LoginModal = ({ onClose, onLoginSuccess }) => {
   const [formType, setFormType] = useState("login"); // login | signup | findId | findPassword
-  const [formData, setFormData] = useState({ userId: "", password: "", email: "" });
-  const [resultMessage, setResultMessage] = useState(""); // 서버 응답 메시지 표시용
+  const [formData, setFormData] = useState({
+    userId: "",
+    password: "",
+    email: "",
+    name: "",
+    nickname: "",
+  });
+  const [resultMessage, setResultMessage] = useState("");
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -13,44 +19,55 @@ const LoginModal = ({ onClose, onLoginSuccess }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setResultMessage(""); // 제출 시 결과 초기화
+    setResultMessage("");
 
     try {
-      let url = "";
-      let requestData = {};
+      const apiMap = {
+        login: { url: "/api/login", data: { userId: formData.userId, password: formData.password } },
+        signup: {
+          url: "/api/signup",
+          data: {
+            userId: formData.userId,
+            password: formData.password,
+            email: formData.email,
+            name: formData.name,
+            nickname: formData.nickname,
+          },
+        },
+        findId: { url: "/api/find-id", data: { email: formData.email } },
+        findPassword: { url: "/api/find-password", data: { userId: formData.userId, email: formData.email } },
+      };
 
-      if (formType === "login") {
-        url = "http://localhost:5000/login";
-        requestData = { userId: formData.userId, password: formData.password };
-      } else if (formType === "signup") {
-        url = "http://localhost:5000/signup";
-        requestData = { userId: formData.userId, password: formData.password, email: formData.email };
-      } else if (formType === "findId") {
-        url = "http://localhost:5000/find-id";
-        requestData = { email: formData.email };
-      } else if (formType === "findPassword") {
-        url = "http://localhost:5000/find-password";
-        requestData = { userId: formData.userId, email: formData.email };
-      }
+      const { url, data } = apiMap[formType];
+      const res = await axios.post(`http://localhost:5000${url}`, data);
+      const result = res.data;
 
-      const response = await axios.post(url, requestData);
-      const data = response.data;
+      if (!result.success) return setResultMessage(`❌ ${result.message}`);
 
-      if (data.success) {
-        if (formType === "login") {
+      switch (formType) {
+        case "login":
+          localStorage.setItem("user", JSON.stringify(result.user));
+          localStorage.setItem("token", result.token); // ✅ 토큰 저장 추가
           setResultMessage("✅ 로그인 성공!");
           if (onLoginSuccess) onLoginSuccess();
-          setTimeout(() => onClose(), 1200);
-        } else if (formType === "signup") {
+          setTimeout(() => onClose(), 800);
+          break;
+
+        case "signup":
           setResultMessage("✅ 회원가입 완료! 로그인 해주세요.");
           setFormType("login");
-        } else if (formType === "findId") {
-          setResultMessage(`🔍 아이디: ${data.userId}`);
-        } else if (formType === "findPassword") {
-          setResultMessage(`🔐 비밀번호: ${data.password}`);
-        }
-      } else {
-        setResultMessage(`❌ ${data.message}`);
+          break;
+
+        case "findId":
+          setResultMessage(`🔍 아이디는 '${result.userId}' 입니다.`);
+          break;
+
+        case "findPassword":
+          setResultMessage(`🔐 비밀번호는 '${result.password}' 입니다.`);
+          break;
+
+        default:
+          break;
       }
     } catch (err) {
       console.error(err);
@@ -60,8 +77,14 @@ const LoginModal = ({ onClose, onLoginSuccess }) => {
 
   const switchForm = (type) => {
     setFormType(type);
-    setResultMessage(""); // 폼 전환 시 메시지 초기화
-    setFormData({ userId: "", password: "", email: "" }); // 입력값 초기화
+    setResultMessage("");
+    setFormData({
+      userId: "",
+      password: "",
+      email: "",
+      name: "",
+      nickname: "",
+    });
   };
 
   const renderForm = () => {
@@ -74,6 +97,7 @@ const LoginModal = ({ onClose, onLoginSuccess }) => {
               <input type="password" name="password" placeholder="비밀번호" value={formData.password} onChange={handleChange} required />
               <button type="submit" className="login-btn">로그인</button>
             </form>
+
             <div className="login-links">
               <button className="link-btn" onClick={() => switchForm("signup")}>회원가입</button>
               <button className="link-btn" onClick={() => switchForm("findId")}>아이디 찾기</button>
@@ -85,36 +109,41 @@ const LoginModal = ({ onClose, onLoginSuccess }) => {
       case "signup":
         return (
           <>
-            <form onSubmit={handleSubmit} className="login-form">
+            <p className="form-title">회원가입</p>
+            <form onSubmit={handleSubmit} className="login-form signup-form">
               <input type="text" name="userId" placeholder="아이디" value={formData.userId} onChange={handleChange} required />
               <input type="password" name="password" placeholder="비밀번호" value={formData.password} onChange={handleChange} required />
+              <input type="text" name="name" placeholder="이름" value={formData.name} onChange={handleChange} required />
+              <input type="text" name="nickname" placeholder="닉네임" value={formData.nickname} onChange={handleChange} required />
               <input type="email" name="email" placeholder="이메일" value={formData.email} onChange={handleChange} required />
-              <button type="submit" className="login-btn">회원가입</button>
+              <button type="submit" className="login-btn">회원가입 완료</button>
             </form>
-            <button className="link-btn" onClick={() => switchForm("login")}>로그인 화면으로</button>
+            <button className="back-btn" onClick={() => switchForm("login")}>로그인 화면으로 돌아가기</button>
           </>
         );
 
       case "findId":
         return (
           <>
+            <p className="form-title">아이디 찾기</p>
             <form onSubmit={handleSubmit} className="login-form">
               <input type="email" name="email" placeholder="가입한 이메일 입력" value={formData.email} onChange={handleChange} required />
               <button type="submit" className="login-btn">아이디 찾기</button>
             </form>
-            <button className="link-btn" onClick={() => switchForm("login")}>로그인 화면으로</button>
+            <button className="back-btn" onClick={() => switchForm("login")}>로그인 화면으로 돌아가기</button>
           </>
         );
 
       case "findPassword":
         return (
           <>
+            <p className="form-title">비밀번호 찾기</p>
             <form onSubmit={handleSubmit} className="login-form">
               <input type="text" name="userId" placeholder="아이디 입력" value={formData.userId} onChange={handleChange} required />
               <input type="email" name="email" placeholder="가입한 이메일 입력" value={formData.email} onChange={handleChange} required />
               <button type="submit" className="login-btn">비밀번호 찾기</button>
             </form>
-            <button className="link-btn" onClick={() => switchForm("login")}>로그인 화면으로</button>
+            <button className="back-btn" onClick={() => switchForm("login")}>로그인 화면으로 돌아가기</button>
           </>
         );
 
@@ -127,12 +156,19 @@ const LoginModal = ({ onClose, onLoginSuccess }) => {
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-container" onClick={(e) => e.stopPropagation()}>
         <img src="/img/logo.png" alt="로고" className="modal-logo" />
-        {/* 메시지를 로고 밑, 폼 위에 표시 */}
-        <p
-          className={`result-message ${resultMessage.includes("✅") ? "success" : resultMessage.includes("❌") || resultMessage.includes("⚠️") ? "error" : ""}`}
-        >
-          {resultMessage}
-        </p>
+        {resultMessage && (
+          <p
+            className={`result-message ${
+              resultMessage.includes("✅")
+                ? "success"
+                : resultMessage.includes("❌") || resultMessage.includes("⚠️")
+                ? "error"
+                : ""
+            }`}
+          >
+            {resultMessage}
+          </p>
+        )}
         {renderForm()}
       </div>
     </div>
