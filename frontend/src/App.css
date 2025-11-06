@@ -28,6 +28,12 @@
   color: #61dafb;
 }
 
+/* App 전체에서 커서 비활성화 */
+* {
+  cursor: default !important;
+}
+
+
 @keyframes App-logo-spin {
   from {
     transform: rotate(0deg);

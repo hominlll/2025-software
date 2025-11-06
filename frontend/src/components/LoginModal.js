@@ -109,41 +109,38 @@ const LoginModal = ({ onClose, onLoginSuccess }) => {
       case "signup":
         return (
           <>
-            <p className="form-title">회원가입</p>
             <form onSubmit={handleSubmit} className="login-form signup-form">
               <input type="text" name="userId" placeholder="아이디" value={formData.userId} onChange={handleChange} required />
               <input type="password" name="password" placeholder="비밀번호" value={formData.password} onChange={handleChange} required />
               <input type="text" name="name" placeholder="이름" value={formData.name} onChange={handleChange} required />
               <input type="text" name="nickname" placeholder="닉네임" value={formData.nickname} onChange={handleChange} required />
               <input type="email" name="email" placeholder="이메일" value={formData.email} onChange={handleChange} required />
-              <button type="submit" className="login-btn">회원가입 완료</button>
+              <button type="submit" className="login-btn">회원가입</button>
             </form>
-            <button className="back-btn" onClick={() => switchForm("login")}>로그인 화면으로 돌아가기</button>
+            <button className="link-btn" onClick={() => switchForm("login")}>로그인 화면으로 돌아가기</button>
           </>
         );
 
       case "findId":
         return (
           <>
-            <p className="form-title">아이디 찾기</p>
             <form onSubmit={handleSubmit} className="login-form">
               <input type="email" name="email" placeholder="가입한 이메일 입력" value={formData.email} onChange={handleChange} required />
               <button type="submit" className="login-btn">아이디 찾기</button>
             </form>
-            <button className="back-btn" onClick={() => switchForm("login")}>로그인 화면으로 돌아가기</button>
+            <button className="link-btn" onClick={() => switchForm("login")}>로그인 화면으로 돌아가기</button>
           </>
         );
 
       case "findPassword":
         return (
           <>
-            <p className="form-title">비밀번호 찾기</p>
             <form onSubmit={handleSubmit} className="login-form">
               <input type="text" name="userId" placeholder="아이디 입력" value={formData.userId} onChange={handleChange} required />
               <input type="email" name="email" placeholder="가입한 이메일 입력" value={formData.email} onChange={handleChange} required />
               <button type="submit" className="login-btn">비밀번호 찾기</button>
             </form>
-            <button className="back-btn" onClick={() => switchForm("login")}>로그인 화면으로 돌아가기</button>
+            <button className="link-btn" onClick={() => switchForm("login")}>로그인 화면으로 돌아가기</button>
           </>
         );
 

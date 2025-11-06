@@ -153,6 +153,76 @@ app.post("/api/user-info", async (req, res) => {
   }
 });
 
+// ✅ 회원정보 수정
+app.put("/api/update-user", async (req, res) => {
+  const token = req.headers.authorization?.split(" ")[1];
+  const { userId, name, nickname, email } = req.body;
+
+  if (!token) return res.status(401).json({ success: false, message: "토큰이 없습니다." });
+
+  try {
+    const decoded = jwt.verify(token, SECRET_KEY);
+
+    await db
+      .promise()
+      .query(
+        "UPDATE users SET name = ?, nickname = ?, email = ? WHERE userId = ?",
+        [name, nickname, email, userId]
+      );
+
+    res.json({ success: true, message: "회원 정보가 수정되었습니다." });
+  } catch (err) {
+    console.error("❌ 회원정보 수정 오류:", err);
+    res.status(500).json({ success: false, message: "서버 오류 발생" });
+  }
+});
+
+// ✅ 비밀번호 변경
+app.put("/api/change-password", async (req, res) => {
+  const token = req.headers.authorization?.split(" ")[1];
+  const { userId, oldPassword, newPassword } = req.body;
+
+  if (!token) return res.status(401).json({ success: false, message: "토큰이 없습니다." });
+
+  try {
+    const decoded = jwt.verify(token, SECRET_KEY);
+
+    // 기존 비밀번호 확인
+    const [rows] = await db.promise().query("SELECT password FROM users WHERE userId = ?", [userId]);
+    if (rows.length === 0) return res.json({ success: false, message: "사용자를 찾을 수 없습니다." });
+
+    const isMatch = await bcrypt.compare(oldPassword, rows[0].password);
+    if (!isMatch) return res.json({ success: false, message: "현재 비밀번호가 일치하지 않습니다." });
+
+    // 새 비밀번호 저장
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    await db.promise().query("UPDATE users SET password = ? WHERE userId = ?", [hashedPassword, userId]);
+
+    res.json({ success: true, message: "비밀번호가 성공적으로 변경되었습니다." });
+  } catch (err) {
+    console.error("❌ 비밀번호 변경 오류:", err);
+    res.status(500).json({ success: false, message: "서버 오류 발생" });
+  }
+});
+
+// ✅ 회원 탈퇴
+app.delete("/api/delete-user", async (req, res) => {
+  const token = req.headers.authorization?.split(" ")[1];
+  const { userId } = req.body;
+
+  if (!token) return res.status(401).json({ success: false, message: "토큰이 없습니다." });
+
+  try {
+    const decoded = jwt.verify(token, SECRET_KEY);
+    await db.promise().query("DELETE FROM users WHERE userId = ?", [userId]);
+
+    res.json({ success: true, message: "회원 탈퇴가 완료되었습니다." });
+  } catch (err) {
+    console.error("❌ 회원 탈퇴 오류:", err);
+    res.status(500).json({ success: false, message: "서버 오류 발생" });
+  }
+});
+
 
 // ✅ 서버 실행
 app.listen(5000, () => {

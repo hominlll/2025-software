@@ -29,11 +29,19 @@
   overflow-y: auto;         /* 내용 많으면 스크롤 */
 }
 
+/* 텍스트 선택 및 I자 커서 방지 */
+.modal-container,
+.modal-container * {
+  user-select: none;        /* 텍스트 드래그 불가 */
+  cursor: default;          /* 일반 화살표 커서 유지 */
+}
+
+
 /* 로고 */
 .modal-logo {
   width: 200px;
   height: auto;
-  margin-bottom: 10px;
+  margin-bottom: 40px;
 }
 
 /* 폼 */
