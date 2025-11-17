@@ -6,6 +6,7 @@ import Banner from './components/Banner';
 import MentorSection from './components/MentorSection';
 import Home from './pages/Home';
 import MyPage from './pages/MyPage';
+import Community from "./pages/Community";
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -13,7 +14,8 @@ function App() {
   return (
     <Router>
       <Routes>
-        {/* 홈 화면 */}
+
+        {/* 홈 */}
         <Route
           path="/"
           element={
@@ -27,7 +29,18 @@ function App() {
           }
         />
 
-        {/* 마이페이지 - 완전히 독립 */}
+        {/* 커뮤니티 */}
+        <Route
+          path="/community"
+          element={
+            <>
+              <Header isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn} />
+              <Community />
+            </>
+          }
+        />
+
+        {/* 마이페이지 */}
         <Route
           path="/mypage"
           element={isLoggedIn ? <MyPage /> : <Navigate to="/" replace />}

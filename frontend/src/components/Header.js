@@ -54,7 +54,7 @@ const Header = ({ isLoggedIn, setIsLoggedIn }) => {
 
         {/* 오른쪽: 설정 + 로그인/로그아웃 */}
         <nav className="nav">
-          <button className="image-button" onClick={() => alert("메뉴 열기!")}>
+          <button className="image-button" onClick={() => navigate("/community")}>
             <img src="/img/setting.png" alt="설정" className="button-image" />
           </button>
 
