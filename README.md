@@ -1,70 +1,74 @@
-# Getting Started with Create React App
+# GROWE
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+GROWE 는 대학생·취준생을 위한 멘토링 & 스터디 매칭 웹 서비스입니다.  
+멘토(직장인·선배)와 멘티(학생)가 전공/관심 분야별로 쉽게 연결되고,  
+커뮤니티에서 정보를 주고받을 수 있도록 만드는 것을 목표로 합니다.
 
-## Available Scripts
+이 프로젝트는 [Create React App](https://github.com/facebook/create-react-app)으로 생성되었습니다.
 
-In the project directory, you can run:
+---
+
+## 주요 기능
+
+- **홈 화면**
+  - 상단 로고 & 멘토링/스터디 탭
+  - 검색 바
+  - 전공/직무 카테고리 메뉴
+  - 추천 멘토 카드 리스트
+
+- **커뮤니티**
+  - 왼쪽 세로 카테고리 (전자 / 전기 / 기계 / 컴퓨터공학 / …)
+  - 선택한 카테고리별 게시글 필터링
+  - 글 작성 모달(제목, 내용, 카테고리 입력)
+
+- **로그인 / 내 정보**
+  - 로그인 모달
+  - 로그인 후 `내 정보(마이페이지)` 이동
+
+---
+
+## 기술 스택
+
+- **Frontend**
+  - React (Create React App)
+  - React Router DOM
+  - Axios (멘토 데이터 통신)
+  - CSS (일반 CSS + 컴포넌트 단위 스타일)
+
+---
+
+## 실행 방법
+
+프로젝트 루트(예: `2025-software`)에서 다음 명령을 사용합니다.
 
 ### `npm start`
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+개발 서버를 실행합니다.
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+- 주소: [http://localhost:3000](http://localhost:3000)
+- 코드 변경 시 자동으로 새로고침됩니다.
+- 콘솔에 린트 에러가 표시될 수 있습니다.
 
 ### `npm test`
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+테스트 러너를 실행합니다.  
+(현재는 기본 CRA 설정만 포함되어 있습니다.)
 
 ### `npm run build`
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+프로덕션 배포용 정적 파일을 `build` 폴더에 생성합니다.
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+- 코드가 최적화 및 압축(minify)되어 빌드됩니다.
+- 빌드 결과물은 정적 호스팅 환경(예: Netlify, Vercel, S3 등)에 바로 배포할 수 있습니다.
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+---
 
-### `npm run eject`
+## 폴더 구조 (요약)
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
-
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
-
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+```bash
+src
+ ├─ components        # 헤더, 배너, 멘토 카드, 카테고리 바, 로그인 모달 등 공용 컴포넌트
+ ├─ pages             # Home, Community, MyPage 등 페이지 단위 컴포넌트
+ ├─ App.js            # 라우팅 및 전체 레이아웃
+ ├─ index.js          # 엔트리 파일
+ └─ index.css         # 공통 스타일(CSS 리셋 및 기본 버튼/폰트 등)
