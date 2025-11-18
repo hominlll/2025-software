@@ -7,6 +7,7 @@ import MentorSection from './components/MentorSection';
 import Home from './pages/Home';
 import MyPage from './pages/MyPage';
 import Community from "./pages/Community";
+import PostDetail from "./components/PostDetail";
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -39,6 +40,8 @@ function App() {
             </>
           }
         />
+
+        <Route path="/community/:id" element={<PostDetail />} />
 
         {/* 마이페이지 */}
         <Route

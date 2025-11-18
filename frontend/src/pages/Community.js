@@ -3,26 +3,49 @@ import React, { useState } from "react";
 import CategoryBar from "../components/CategoryBar";
 import PostList from "../components/PostList";
 import PostModal from "../components/PostModal";
+import PostDetail from "../components/PostDetail";
 
 export default function Community() {
   const [selectedCategory, setSelectedCategory] = useState("전체");
   const [posts, setPosts] = useState([]);
   const [openModal, setOpenModal] = useState(false);
 
-  // 선택된 카테고리에 맞게 필터링
+  // 클릭된 게시글
+  const [selectedPost, setSelectedPost] = useState(null);
+
+  // 게시글별 댓글: { [postId]: [comment, ...] }
+  const [commentsByPost, setCommentsByPost] = useState({});
+
   const filteredPosts = posts.filter((post) =>
     selectedCategory === "전체" ? true : post.category === selectedCategory
   );
 
-  const addPost = (post) => {
-    setPosts([...posts, post]);
+  const addPost = (postFromModal) => {
+    const newPost = {
+      ...postFromModal,
+      id: Date.now(), // 간단한 id
+    };
+    setPosts((prev) => [...prev, newPost]);
+  };
+
+  const addCommentToPost = (postId, content) => {
+    setCommentsByPost((prev) => {
+      const prevComments = prev[postId] || [];
+      const newComment = {
+        id: Date.now(),
+        content,
+        createdAt: new Date().toISOString(),
+      };
+      return {
+        ...prev,
+        [postId]: [...prevComments, newComment],
+      };
+    });
   };
 
   return (
     <div className="w-full max-w-5xl mx-auto mt-10 px-3">
-      {/* 왼쪽: 카테고리 / 오른쪽: 게시글 리스트 */}
       <div className="flex gap-8 items-start">
-        {/* 카테고리 세로 메뉴 */}
         <div className="w-32 shrink-0">
           <CategoryBar
             selected={selectedCategory}
@@ -30,9 +53,11 @@ export default function Community() {
           />
         </div>
 
-        {/* 게시글 리스트 */}
         <div className="flex-1">
-          <PostList posts={filteredPosts} />
+          <PostList
+            posts={filteredPosts}
+            onPostClick={(post) => setSelectedPost(post)}  // ★ 카드 클릭 시
+          />
         </div>
       </div>
 
@@ -51,6 +76,17 @@ export default function Community() {
       {openModal && (
         <PostModal onClose={() => setOpenModal(false)} onSubmit={addPost} />
       )}
+
+      {/* 게시글 상세 + 댓글 모달 */}
+      {selectedPost && (
+        <PostDetail
+          post={selectedPost}
+          comments={commentsByPost[selectedPost.id] || []}
+          onAddComment={(content) => addCommentToPost(selectedPost.id, content)}
+          onClose={() => setSelectedPost(null)}
+        />
+      )}
     </div>
   );
 }
+

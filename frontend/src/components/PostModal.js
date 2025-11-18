@@ -25,7 +25,16 @@ export default function PostModal({ onClose, onSubmit }) {
       alert("모든 내용을 입력해주세요.");
       return;
     }
-    onSubmit({ title, content, category });
+
+    // ★ 작성 시간(createdAt) 추가
+    const newPost = {
+      title,
+      content,
+      category,
+      createdAt: new Date().toISOString(),
+    };
+
+    onSubmit(newPost);
     onClose();
   };
 
