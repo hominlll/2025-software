@@ -37,7 +37,10 @@ const Header = ({ isLoggedIn, setIsLoggedIn }) => {
         <div className="center-nav">
           <button
             className={`center-button ${selected === 'mentoring' ? 'active' : ''}`}
-            onClick={() => setSelected('mentoring')}
+            onClick={() => {
+              setSelected('mentoring');
+              navigate('/mentoring');   // 이동
+            }}
           >
             <img src="/img/mentoring.png" alt="멘토링" className="center-icon" />
             <span>멘토링</span>
@@ -45,19 +48,29 @@ const Header = ({ isLoggedIn, setIsLoggedIn }) => {
 
           <button
             className={`center-button ${selected === 'study' ? 'active' : ''}`}
-            onClick={() => setSelected('study')}
+            onClick={() => {
+              setSelected('study');
+              navigate('/study');        // 이동
+            }}
           >
             <img src="/img/study.png" alt="스터디" className="center-icon" />
             <span>스터디</span>
           </button>
+
+          <button
+            className={`center-button ${selected === 'community' ? 'active' : ''}`}
+            onClick={() => {
+              setSelected('community');
+              navigate('/community');    // 이동
+            }}
+          >
+            <img src="/img/community.png" alt="커뮤니티" className="center-icon" />
+            <span>커뮤니티</span>
+          </button>
         </div>
 
-        {/* 오른쪽: 설정 + 로그인/로그아웃 */}
+        {/*  로그인/로그아웃 */}
         <nav className="nav">
-          <button className="image-button" onClick={() => navigate("/community")}>
-            <img src="/img/setting.png" alt="설정" className="button-image" />
-          </button>
-
           {/* 로그인 상태에 따라 표시되는 버튼 변경 */}
           {!isLoggedIn ? (
             <button className="login-button" onClick={() => setShowModal(true)}>
