@@ -71,7 +71,7 @@ export default function PostDetail() {
     <>
       <Header />
 
-      <div className="w-full max-w-4xl mx-auto mt-24 px-3">
+      <div className="w-full max-w-4xl mx-auto mt-12 mb-12 px-3">
         <div className="bg-white rounded-xl shadow-md overflow-hidden border">
           {/* 상단: 글 정보 */}
           <div className="px-8 pt-8 pb-6 border-b">
