@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom'; // ✅ 추가
+import { useNavigate } from 'react-router-dom';
 import './Header.css';
 import LoginModal from './LoginModal';
 
@@ -17,19 +17,28 @@ const Header = ({ isLoggedIn, setIsLoggedIn }) => {
   // 로그아웃 시 실행
   const handleLogout = () => {
     setIsLoggedIn(false);
-    alert("로그아웃되었습니다.");
+    alert('로그아웃되었습니다.');
   };
 
-  // ✅ 마이페이지 이동
+  // 마이페이지 이동
   const handleMyPage = () => {
     navigate('/mypage');
+  };
+
+  // ✅ 로고 클릭 시 메인 화면으로 이동
+  const handleLogoClick = () => {
+    navigate('/'); // 메인 화면 경로에 맞게 수정 (예: '/main')
   };
 
   return (
     <header className="header">
       <div className="header-top">
         {/* 왼쪽: 로고 */}
-        <h1 className="logo">
+        <h1
+          className="logo"
+          onClick={handleLogoClick}
+          style={{ cursor: 'pointer' }} // 마우스 올렸을 때 손가락 모양
+        >
           <img src="/img/logo.png" alt="로고" className="logo-img" />
         </h1>
 
@@ -54,7 +63,7 @@ const Header = ({ isLoggedIn, setIsLoggedIn }) => {
 
         {/* 오른쪽: 설정 + 로그인/로그아웃 */}
         <nav className="nav">
-          <button className="image-button" onClick={() => navigate("/community")}>
+          <button className="image-button" onClick={() => navigate('/community')}>
             <img src="/img/setting.png" alt="설정" className="button-image" />
           </button>
 
@@ -65,8 +74,8 @@ const Header = ({ isLoggedIn, setIsLoggedIn }) => {
             </button>
           ) : (
             <>
-              {/* ✅ 마이페이지 이동 버튼 수정 */}
-              <button className="mypage-button" onClick={() => navigate('/mypage')}>
+              {/* 마이페이지 이동 버튼 */}
+              <button className="mypage-button" onClick={handleMyPage}>
                 내 정보
               </button>
 
@@ -81,16 +90,16 @@ const Header = ({ isLoggedIn, setIsLoggedIn }) => {
       {/* 검색창 */}
       <div className="search-container">
         <input type="text" className="search-input" placeholder="검색어를 입력하세요..." />
-        <button className="search-button" onClick={() => alert("검색!")}>
+        <button className="search-button" onClick={() => alert('검색!')}>
           <img src="/img/search.svg" alt="검색" />
         </button>
       </div>
 
-      {/* ✅ 로그인 모달 표시 */}
+      {/* 로그인 모달 표시 */}
       {showModal && (
         <LoginModal
           onClose={() => setShowModal(false)}
-          onLoginSuccess={handleLoginSuccess} // ✅ 로그인 성공 시 호출
+          onLoginSuccess={handleLoginSuccess}
         />
       )}
     </header>
