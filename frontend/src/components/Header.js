@@ -29,7 +29,7 @@ const Header = ({ isLoggedIn, setIsLoggedIn }) => {
     <header className="header">
       <div className="header-top">
         {/* 왼쪽: 로고 */}
-        <h1 className="logo">
+        <h1 className="logo" onClick={() => navigate('/')} style={{ cursor: "pointer" }}>
           <img src="/img/logo.png" alt="로고" className="logo-img" />
         </h1>
 
@@ -39,7 +39,7 @@ const Header = ({ isLoggedIn, setIsLoggedIn }) => {
             className={`center-button ${selected === 'mentoring' ? 'active' : ''}`}
             onClick={() => {
               setSelected('mentoring');
-              navigate('/mentoring');   // 이동
+              navigate('/');
             }}
           >
             <img src="/img/mentoring.png" alt="멘토링" className="center-icon" />
@@ -50,7 +50,7 @@ const Header = ({ isLoggedIn, setIsLoggedIn }) => {
             className={`center-button ${selected === 'study' ? 'active' : ''}`}
             onClick={() => {
               setSelected('study');
-              navigate('/study');        // 이동
+              navigate('/');
             }}
           >
             <img src="/img/study.png" alt="스터디" className="center-icon" />
