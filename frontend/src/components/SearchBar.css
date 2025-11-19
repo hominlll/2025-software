@@ -1,0 +1,46 @@
+/* 검색창 */
+.search-container {
+  display: flex;
+  align-items: center;
+  width: 600px;
+  height: 60px;
+  border-radius: 40px;
+  margin: 15px auto;
+  overflow: hidden;
+  background-color: #fff;
+  border: 1px solid #ccc;
+}
+
+.search-input {
+  flex: 1;
+  height: 100%;
+  border: none;
+  outline: none;
+  padding: 0 15px;
+  font-size: 16px;
+  background-color: transparent;
+}
+
+.search-button {
+  width: 50px;
+  height: 50px;
+  border: none;
+  border-radius: 40px;
+  background-color: #27ae60;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 8px;
+  transition: all 0.3s ease;
+}
+
+.search-button img {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+}
+
+.search-button:hover {
+  background-color: #219150;
+}

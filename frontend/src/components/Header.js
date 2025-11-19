@@ -1,26 +1,22 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom'; // ✅ 추가
+import { useNavigate } from 'react-router-dom';
 import './Header.css';
 import LoginModal from './LoginModal';
 
-const Header = ({ isLoggedIn, setIsLoggedIn }) => {
-  const [selected, setSelected] = useState('mentoring');
+const Header = ({ isLoggedIn, setIsLoggedIn, selectedTab, setSelectedTab }) => {
   const [showModal, setShowModal] = useState(false); // 모달 상태만 내부에서 관리
   const navigate = useNavigate();
 
-  // 로그인 성공 시 실행
   const handleLoginSuccess = () => {
     setIsLoggedIn(true);
     setShowModal(false);
   };
 
-  // 로그아웃 시 실행
   const handleLogout = () => {
     setIsLoggedIn(false);
     alert("로그아웃되었습니다.");
   };
 
-  // ✅ 마이페이지 이동
   const handleMyPage = () => {
     navigate('/mypage');
   };
@@ -28,17 +24,15 @@ const Header = ({ isLoggedIn, setIsLoggedIn }) => {
   return (
     <header className="header">
       <div className="header-top">
-        {/* 왼쪽: 로고 */}
         <h1 className="logo" onClick={() => navigate('/')} style={{ cursor: "pointer" }}>
           <img src="/img/logo.png" alt="로고" className="logo-img" />
         </h1>
 
-        {/* 가운데: 스터디/멘토링 */}
         <div className="center-nav">
           <button
-            className={`center-button ${selected === 'mentoring' ? 'active' : ''}`}
+            className={`center-button ${selectedTab === 'mentoring' ? 'active' : ''}`}
             onClick={() => {
-              setSelected('mentoring');
+              setSelectedTab('mentoring');
               navigate('/');
             }}
           >
@@ -47,9 +41,9 @@ const Header = ({ isLoggedIn, setIsLoggedIn }) => {
           </button>
 
           <button
-            className={`center-button ${selected === 'study' ? 'active' : ''}`}
+            className={`center-button ${selectedTab === 'study' ? 'active' : ''}`}
             onClick={() => {
-              setSelected('study');
+              setSelectedTab('study');
               navigate('/');
             }}
           >
@@ -58,10 +52,10 @@ const Header = ({ isLoggedIn, setIsLoggedIn }) => {
           </button>
 
           <button
-            className={`center-button ${selected === 'community' ? 'active' : ''}`}
+            className={`center-button ${selectedTab === 'community' ? 'active' : ''}`}
             onClick={() => {
-              setSelected('community');
-              navigate('/community');    // 이동
+              setSelectedTab('community');
+              navigate('/community');
             }}
           >
             <img src="/img/community.png" alt="커뮤니티" className="center-icon" />
@@ -69,20 +63,16 @@ const Header = ({ isLoggedIn, setIsLoggedIn }) => {
           </button>
         </div>
 
-        {/*  로그인/로그아웃 */}
         <nav className="nav">
-          {/* 로그인 상태에 따라 표시되는 버튼 변경 */}
           {!isLoggedIn ? (
             <button className="login-button" onClick={() => setShowModal(true)}>
               로그인
             </button>
           ) : (
             <>
-              {/* ✅ 마이페이지 이동 버튼 수정 */}
-              <button className="mypage-button" onClick={() => navigate('/mypage')}>
+              <button className="mypage-button" onClick={handleMyPage}>
                 내 정보
               </button>
-
               <button className="logout-button" onClick={handleLogout}>
                 로그아웃
               </button>
@@ -91,19 +81,10 @@ const Header = ({ isLoggedIn, setIsLoggedIn }) => {
         </nav>
       </div>
 
-      {/* 검색창 */}
-      <div className="search-container">
-        <input type="text" className="search-input" placeholder="검색어를 입력하세요..." />
-        <button className="search-button" onClick={() => alert("검색!")}>
-          <img src="/img/search.svg" alt="검색" />
-        </button>
-      </div>
-
-      {/* ✅ 로그인 모달 표시 */}
       {showModal && (
         <LoginModal
           onClose={() => setShowModal(false)}
-          onLoginSuccess={handleLoginSuccess} // ✅ 로그인 성공 시 호출
+          onLoginSuccess={handleLoginSuccess}
         />
       )}
     </header>

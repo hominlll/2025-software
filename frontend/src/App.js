@@ -2,7 +2,9 @@ import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Header from './components/Header';
 import CategoryMenu from './components/CategoryMenu';
-import Banner from './components/Banner';
+import SearchBar from './components/SearchBar'; 
+import MentorBanner from './components/MentorBanner';
+import StudyBanner from './components/StudyBanner'; // 추가
 import MentorSection from './components/MentorSection';
 import Home from './pages/Home';
 import MyPage from './pages/MyPage';
@@ -11,6 +13,7 @@ import PostDetail from "./components/PostDetail";
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [selectedTab, setSelectedTab] = useState('mentoring');
 
   return (
     <Router>
@@ -21,9 +24,23 @@ function App() {
           path="/"
           element={
             <>
-              <Header isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn} />
+              <Header 
+                isLoggedIn={isLoggedIn} 
+                setIsLoggedIn={setIsLoggedIn}
+                selectedTab={selectedTab}
+                setSelectedTab={setSelectedTab}
+              />
+
+              {(selectedTab === "mentoring" || selectedTab === "study") && (
+                <SearchBar selectedTab={selectedTab} />
+              )}
+
               <CategoryMenu />
-              <Banner />
+
+              {/* 배너 분기 */}
+              {selectedTab === "mentoring" && <MentorBanner />}
+              {selectedTab === "study" && <StudyBanner />}
+
               <MentorSection />
               <Home />
             </>
@@ -35,7 +52,12 @@ function App() {
           path="/community"
           element={
             <>
-              <Header isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn} />
+              <Header 
+                isLoggedIn={isLoggedIn} 
+                setIsLoggedIn={setIsLoggedIn}
+                selectedTab={selectedTab}
+                setSelectedTab={setSelectedTab}
+              />
               <Community />
             </>
           }
