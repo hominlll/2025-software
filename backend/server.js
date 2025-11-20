@@ -15,7 +15,7 @@ app.use(bodyParser.json());
 const db = mysql.createConnection({
   host: "localhost",
   user: "root",
-  password: "hm09080908", // 🔹 실제 MySQL 비밀번호 확인 필요
+  password: "test1234", // 🔹 실제 MySQL 비밀번호 확인 필요
   database: "login_db",
 });
 
