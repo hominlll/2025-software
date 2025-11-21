@@ -8,6 +8,7 @@ import Home from './pages/Home';
 import MyPage from './pages/MyPage';
 import Community from "./pages/Community";
 import PostDetail from "./components/PostDetail";
+import Study from "./pages/Study";
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -16,7 +17,7 @@ function App() {
     <Router>
       <Routes>
 
-        {/* 홈 */}
+        {/* 홈(멘토링 메인) */}
         <Route
           path="/"
           element={
@@ -29,6 +30,18 @@ function App() {
           }
         />
 
+         {/* 스터디 메인 */}
+        <Route
+          path="/study"
+          element={
+            <>
+              <Header isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn} />
+              {/* 스터디에는 CategoryMenu, Banner가 필요 없다면 생략 가능 */}
+              <Study />
+            </>
+          }
+        />
+        
         {/* 커뮤니티 */}
         <Route
           path="/community"

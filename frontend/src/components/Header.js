@@ -50,7 +50,7 @@ const Header = ({ isLoggedIn, setIsLoggedIn }) => {
             className={`center-button ${selected === 'study' ? 'active' : ''}`}
             onClick={() => {
               setSelected('study');
-              navigate('/');
+              navigate('/study');
             }}
           >
             <img src="/img/study.png" alt="스터디" className="center-icon" />
