@@ -16,16 +16,30 @@ const db = mysql.createConnection({
   host: "localhost",
   user: "root",
   password: "test1234", // 🔹 실제 MySQL 비밀번호 확인 필요
-  database: "login_db",
+  database: "login_db"
 });
 
-// ✅ DB 연결 확인
+// ✅ login_DB 연결 확인
 db.connect((err) => {
   if (err) {
     console.error("❌ MySQL 연결 실패:", err);
   } else {
     console.log("✅ MySQL 연결 성공");
   }
+});
+
+// mentoring_DB 연결
+const mentoringDB = mysql.createConnection({
+  host: "localhost",
+  user: "root",
+  password: "test1234",
+  database: "mentoring"
+});
+
+//
+mentoringDB.connect(err => {
+  if (err) console.log("❌ mentoring DB 연결 실패");
+  else console.log("✅ mentoring DB 연결 성공");
 });
 
 // ✅ 회원가입
@@ -221,6 +235,17 @@ app.delete("/api/delete-user", async (req, res) => {
     console.error("❌ 회원 탈퇴 오류:", err);
     res.status(500).json({ success: false, message: "서버 오류 발생" });
   }
+});
+
+// 멘토
+app.get("/mentors", (req, res) => {
+  mentoringDB.query("SELECT * FROM mentors", (err, results) => {
+    if (err) {
+      console.error("DB error:", err);
+      return res.status(500).send(err);
+    }
+    res.json(results);
+  });
 });
 
 

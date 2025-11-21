@@ -24,7 +24,6 @@ function App() {
               <Header isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn} />
               <CategoryMenu />
               <Banner />
-              <MentorSection />
               <Home />
             </>
           }
