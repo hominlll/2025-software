@@ -26,15 +26,13 @@ const formatCommentTime = (createdAt) => {
 export default function PostDetail() {
   const navigate = useNavigate();
   const { state } = useLocation();
-  const { id } = useParams();
+  const { id } = useParams(); // 필요 없으면 지워도 됨
 
   const post = state?.post;
 
-  // ✅ 훅은 항상 컴포넌트 최상단에서!
   const [comments, setComments] = useState([]);
   const [commentInput, setCommentInput] = useState("");
 
-  // post 없을 때는 조기 return (여기서는 훅 호출 X)
   if (!post) {
     return (
       <>
@@ -78,9 +76,6 @@ export default function PostDetail() {
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
                 <span className="text-xs px-2 py-1 rounded-full border border-green-500 text-green-700 font-semibold">
-                  질문
-                </span>
-                <span className="text-xs px-2 py-1 rounded-full bg-green-100 text-green-700">
                   {post.category}
                 </span>
               </div>
@@ -109,26 +104,8 @@ export default function PostDetail() {
           <div className="px-8 pt-6 pb-8">
             <h3 className="font-semibold mb-3">댓글 {comments.length}</h3>
 
-            {/* 댓글 입력 */}
-            <div className="border rounded-lg bg-gray-50 p-4 mb-6">
-              <textarea
-                className="w-full border rounded-lg p-2 h-20 resize-none text-sm bg-white focus:outline-none focus:ring-1 focus:ring-green-500"
-                placeholder="댓글을 작성해보세요."
-                value={commentInput}
-                onChange={(e) => setCommentInput(e.target.value)}
-              />
-              <div className="flex justify-end mt-2">
-                <button
-                  className="px-4 py-2 rounded-lg bg-green-600 text-white text-sm hover:bg-green-700"
-                  onClick={handleAddComment}
-                >
-                  등록
-                </button>
-              </div>
-            </div>
-
-            {/* 댓글 리스트 */}
-            <div className="space-y-3">
+            {/* ✅ 댓글 리스트 (위쪽) */}
+            <div className="space-y-3 mb-6">
               {comments.length === 0 ? (
                 <p className="text-sm text-gray-400">
                   아직 등록된 댓글이 없습니다.
@@ -151,10 +128,14 @@ export default function PostDetail() {
                               {formatCommentTime(c.createdAt)}
                             </span>
                           </div>
-                          <button className="flex items-center gap-1 text-xs text-gray-400 hover:text-green-600">
+                          <button
+                            className="flex items-center gap-1 rounded-full bg-emerald-50 px-3 py-1 
+                                       text-xs font-medium text-emerald-600 hover:bg-emerald-100"
+                          >
                             <span>👍</span>
                             <span>0</span>
                           </button>
+
                         </div>
                         <p className="whitespace-pre-line text-gray-800 mt-1">
                           {c.content}
@@ -164,6 +145,24 @@ export default function PostDetail() {
                   </div>
                 ))
               )}
+            </div>
+
+            {/* ✅ 댓글 작성창 (맨 아래) */}
+            <div className="border rounded-lg bg-gray-50 p-4">
+              <textarea
+                className="w-full border rounded-lg p-2 h-20 resize-none text-sm bg-white focus:outline-none focus:ring-1 focus:ring-green-500"
+                placeholder="댓글을 작성해보세요."
+                value={commentInput}
+                onChange={(e) => setCommentInput(e.target.value)}
+              />
+              <div className="flex justify-end mt-2">
+                <button
+                  className="px-4 py-2 rounded-lg bg-green-600 text-white text-sm hover:bg-green-700"
+                  onClick={handleAddComment}
+                >
+                  등록
+                </button>
+              </div>
             </div>
           </div>
         </div>
