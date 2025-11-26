@@ -2,18 +2,9 @@
 import React from "react";
 
 const categories = [
-  "전체",
-  "전자",
-  "전기",
-  "기계",
-  "컴퓨터공학",
-  "생명",
-  "화학",
-  "교육",
-  "경영",
-  "경제",
-  "법",
-  "언어",
+  '전체','경영','경제','교육','법',
+  '디자인','기계','전기·전자','컴퓨터공학',
+  '화학','생명','면접',
 ];
 
 export default function CategoryBar({ selected, setSelected }) {
