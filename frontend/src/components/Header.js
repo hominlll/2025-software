@@ -24,7 +24,7 @@ const Header = ({ isLoggedIn, setIsLoggedIn, selectedTab, setSelectedTab }) => {
   return (
     <header className="header">
       <div className="header-top">
-        <h1 className="logo" onClick={() => navigate('/')} style={{ cursor: "pointer" }}>
+        <h1 className="logo" onClick={() => {setSelectedTab('mentoring'); navigate('/');}} style={{ cursor: "pointer" }}>
           <img src="/img/logo.png" alt="로고" className="logo-img" />
         </h1>
 
