@@ -1,9 +1,9 @@
 const MentorCard = ({ mentor }) => {
   return (
     <div className="w-85 bg-white shadow-md rounded-2xl p-4 hover:shadow-xl transition">
-      <img 
-        src={mentor.image} 
-        alt={mentor.name} 
+      <img
+        src={mentor.image}
+        alt={mentor.name}
         className="w-full h-40 object-cover rounded-xl"
       />
 
@@ -24,7 +24,7 @@ const MentorCard = ({ mentor }) => {
 
       <div className="flex flex-wrap gap-1 mt-3">
         {mentor.tags.split(',').map(tag => (
-          <span 
+          <span
             key={tag}
             className="text-xs bg-gray-100 px-2 py-1 rounded-full text-gray-700"
           >

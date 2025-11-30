@@ -2,9 +2,9 @@ import React, { useState } from 'react';
 import './CategoryMenu.css';
 
 const categories = [
-  '전체','경영','경제','교육','기계',
-  '디자인','법','생명','전기·전자',
-  '컴공','화학','면접'
+  '전체','경영','경제','교육','법',
+  '디자인','기계','전기·전자','컴퓨터공학',
+  '화학','생명','면접'
 ];
 
 const categoryIcons = {
@@ -17,7 +17,7 @@ const categoryIcons = {
   '법': '/img/category/법.png',
   '생명': '/img/category/생명.png',
   '전기·전자': '/img/category/전기·전자.png',
-  '컴공': '/img/category/컴공.png',
+  '컴퓨터공학': '/img/category/컴퓨터공학.png',
   '화학': '/img/category/화학.png',
   '면접': '/img/category/면접.png'
 };
