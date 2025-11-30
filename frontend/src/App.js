@@ -7,6 +7,7 @@ import Home from './pages/Home';
 import MyPage from './pages/MyPage';
 import Community from "./pages/Community";
 import PostDetail from "./components/PostDetail";
+import MentorDetailPage from "./pages/MentorDetailPage";  // ⭐ 추가됨
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -17,7 +18,7 @@ function App() {
     <Router>
       <Routes>
 
-        {/* 홈 페이지 */}
+        {/* 홈 */}
         <Route
           path="/"
           element={
@@ -36,10 +37,13 @@ function App() {
 
               <CategoryMenu />
 
-              <Home selectedTab={selectedTab} userNickname={userNickname} /> {/* ⭐ Home에 전달 */}
+              <Home selectedTab={selectedTab} userNickname={userNickname} />
             </>
           }
         />
+
+        {/* 멘토 상세 페이지 */}
+        <Route path="/mentor/:id" element={<MentorDetailPage />} />
 
         {/* 커뮤니티 */}
         <Route

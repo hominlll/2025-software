@@ -1,6 +1,13 @@
+import { useNavigate } from "react-router-dom";
+
 const MentorCard = ({ mentor }) => {
+  const navigate = useNavigate();
+
   return (
-    <div className="w-85 bg-white shadow-md rounded-2xl p-4 hover:shadow-xl transition">
+    <div
+      className="w-85 bg-white shadow-md rounded-2xl p-4 hover:shadow-xl transition cursor-pointer"
+      onClick={() => navigate(`/mentor/${mentor.id}`)}
+    >
       <img
         src={mentor.image}
         alt={mentor.name}

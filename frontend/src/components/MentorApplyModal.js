@@ -2,18 +2,20 @@ import React, { useState } from "react";
 import axios from "axios";
 
 export default function MentorApplyModal({ onClose, userNickname }) {
-    const [name, setName] = useState(userNickname || "");   // mentor.name
-    const [position, setPosition] = useState("");           // mentor.position
-    const [experience, setExperience] = useState("");       // mentor.experience
-    const [company, setCompany] = useState("");             // mentor.company
-    const [price, setPrice] = useState("");                 // mentor.price
-    const [tags, setTags] = useState("");                   // mentor.tags
-    const [image, setImage] = useState("");                 // mentor.image
+    const [name, setName] = useState(userNickname || "");
+    const [position, setPosition] = useState("");
+    const [experience, setExperience] = useState("");
+    const [company, setCompany] = useState("");
+    const [price, setPrice] = useState("");
+    const [tags, setTags] = useState("");
+    const [image, setImage] = useState("");
+    const [description, setDescription] = useState("");
+
     const rating = 0;
     const reviews = 0;
 
     const handleSubmit = async () => {
-        if (!name || !position || !experience || !company || !price || !tags || !image) {
+        if (!name || !position || !experience || !company || !price || !tags || !image || !description) {
             alert("모든 필드를 입력해주세요.");
             return;
         }
@@ -27,7 +29,8 @@ export default function MentorApplyModal({ onClose, userNickname }) {
             reviews,
             price,
             tags,
-            image
+            image,
+            description
         };
 
         try {
@@ -35,7 +38,7 @@ export default function MentorApplyModal({ onClose, userNickname }) {
             if (res.data.success) {
                 alert("멘토 등록 성공!");
                 onClose();
-                window.location.reload(); // 새 멘토가 즉시 화면에 나타나도록 새로고침
+                window.location.reload();
             } else {
                 alert("멘토 등록 실패: " + res.data.message);
             }
@@ -56,72 +59,62 @@ export default function MentorApplyModal({ onClose, userNickname }) {
 
                     <div>
                         <label className="text-sm font-medium text-gray-700">이름</label>
-                        <input type="text" value={name} onChange={(e) => setName(e.target.value)}
-                            className="mt-1 w-full rounded-md border px-3 py-2 text-sm outline-none"
-                            placeholder="예: 홍길동"
-                        />
+                        <input value={name} onChange={(e) => setName(e.target.value)}
+                            className="mt-1 w-full rounded-md border px-3 py-2 text-sm" />
                     </div>
 
                     <div>
                         <label className="text-sm font-medium text-gray-700">직무</label>
-                        <input type="text" value={position} onChange={(e) => setPosition(e.target.value)}
-                            className="mt-1 w-full rounded-md border px-3 py-2 text-sm outline-none"
-                            placeholder="예: 프론트엔드 개발자"
-                        />
+                        <input value={position} onChange={(e) => setPosition(e.target.value)}
+                            className="mt-1 w-full rounded-md border px-3 py-2 text-sm" />
                     </div>
 
                     <div>
                         <label className="text-sm font-medium text-gray-700">경력</label>
-                        <input type="text" value={experience} onChange={(e) => setExperience(e.target.value)}
-                            className="mt-1 w-full rounded-md border px-3 py-2 text-sm outline-none"
-                            placeholder="예: 3년차 개발자"
-                        />
+                        <input value={experience} onChange={(e) => setExperience(e.target.value)}
+                            className="mt-1 w-full rounded-md border px-3 py-2 text-sm" />
                     </div>
 
                     <div>
                         <label className="text-sm font-medium text-gray-700">회사명</label>
-                        <input type="text" value={company} onChange={(e) => setCompany(e.target.value)}
-                            className="mt-1 w-full rounded-md border px-3 py-2 text-sm outline-none"
-                            placeholder="예: 네이버"
-                        />
+                        <input value={company} onChange={(e) => setCompany(e.target.value)}
+                            className="mt-1 w-full rounded-md border px-3 py-2 text-sm" />
                     </div>
 
                     <div>
-                        <label className="text-sm font-medium text-gray-700">가격 (₩)</label>
+                        <label className="text-sm font-medium text-gray-700">가격(₩)</label>
                         <input type="number" value={price} onChange={(e) => setPrice(e.target.value)}
-                            className="mt-1 w-full rounded-md border px-3 py-2 text-sm outline-none"
-                            placeholder="예: 50000"
-                        />
+                            className="mt-1 w-full rounded-md border px-3 py-2 text-sm" />
                     </div>
 
                     <div>
-                        <label className="text-sm font-medium text-gray-700">태그 (쉼표로 구분)</label>
-                        <input type="text" value={tags} onChange={(e) => setTags(e.target.value)}
-                            className="mt-1 w-full rounded-md border px-3 py-2 text-sm outline-none"
-                            placeholder="예: React, JavaScript"
-                        />
+                        <label className="text-sm font-medium text-gray-700">태그(,로 구분)</label>
+                        <input value={tags} onChange={(e) => setTags(e.target.value)}
+                            className="mt-1 w-full rounded-md border px-3 py-2 text-sm" />
                     </div>
 
                     <div>
                         <label className="text-sm font-medium text-gray-700">이미지 URL</label>
-                        <input type="text" value={image} onChange={(e) => setImage(e.target.value)}
-                            className="mt-1 w-full rounded-md border px-3 py-2 text-sm outline-none"
-                            placeholder="예: https://example.com/myimage.jpg"
-                        />
+                        <input value={image} onChange={(e) => setImage(e.target.value)}
+                            className="mt-1 w-full rounded-md border px-3 py-2 text-sm" />
+                    </div>
+
+                    <div>
+                        <label className="text-sm font-medium text-gray-700">멘토 상세 소개</label>
+                        <textarea value={description} onChange={(e) => setDescription(e.target.value)}
+                            rows={4} className="mt-1 w-full rounded-md border px-3 py-2 text-sm resize-none" />
                     </div>
                 </div>
 
                 <div className="mt-6 flex justify-end gap-3">
-                    <button onClick={onClose}
-                        className="rounded-lg bg-gray-400 text-white px-4 py-2 text-sm">
+                    <button onClick={onClose} className="rounded-lg bg-gray-400 text-white px-4 py-2 text-sm">
                         취소
                     </button>
-
-                    <button onClick={handleSubmit}
-                        className="rounded-lg bg-emerald-500 text-white px-4 py-2 text-sm">
+                    <button onClick={handleSubmit} className="rounded-lg bg-emerald-500 text-white px-4 py-2 text-sm">
                         등록하기
                     </button>
                 </div>
+
             </div>
         </div>
     );

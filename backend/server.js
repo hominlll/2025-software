@@ -263,41 +263,46 @@ app.get("/mentors", (req, res) => {
   });
 });
 
+// 멘토 상세 조회(상세 페이지)
+app.get("/api/mentor/:id", (req, res) => {
+  const mentorId = req.params.id;
+
+  mentoringDB.query(
+    "SELECT * FROM mentors WHERE id = ?",
+    [mentorId],
+    (err, results) => {
+      if (err) {
+        console.error("DB error:", err);
+        return res.status(500).send(err);
+      }
+      if (results.length === 0) {
+        return res.json({ success: false, message: "멘토를 찾을 수 없습니다." });
+      }
+      res.json({ success: true, mentor: results[0] });
+    }
+  );
+});
+
+
 // ✅ 멘토 등록 API
 app.post("/api/mentor", (req, res) => {
-  const { name, position, experience, company, rating, reviews, price, tags, image } = req.body;
-
-  if (!name || !position || !experience || !company || !price || !tags || !image) {
-    return res.json({ success: false, message: "모든 필드를 입력해주세요." });
-  }
+  const { name, position, experience, company, rating, reviews, price, tags, image, description } = req.body;
 
   const sql = `
-    INSERT INTO mentors (name, position, experience, company, rating, reviews, price, tags, image)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    INSERT INTO mentors (name, position, experience, company, rating, reviews, price, tags, image, description)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `;
 
-  const values = [
-    name,
-    position,
-    experience,
-    company,
-    rating,
-    reviews,
-    price,
-    tags,
-    image
-  ];
+  const values = [name, position, experience, company, rating, reviews, price, tags, image, description];
 
   mentoringDB.query(sql, values, (err, result) => {
     if (err) {
       console.error("멘토 등록 오류:", err);
       return res.json({ success: false, message: "DB 오류" });
     }
-    res.json({ success: true, message: "멘토 지원 완료!", id: result.insertId });
+    res.json({ success: true, message: "멘토 등록 완료!", id: result.insertId });
   });
 });
-
-
 
 // ------------------- 스터디 API -------------------
 
