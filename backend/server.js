@@ -250,7 +250,9 @@ app.delete("/api/delete-user", async (req, res) => {
   }
 });
 
-// 멘토
+// ------------------- 멘토 API -------------------
+
+// 멘토 DB 가져오기
 app.get("/mentors", (req, res) => {
   mentoringDB.query("SELECT * FROM mentors", (err, results) => {
     if (err) {
@@ -260,6 +262,42 @@ app.get("/mentors", (req, res) => {
     res.json(results);
   });
 });
+
+// ✅ 멘토 등록 API
+app.post("/api/mentor", (req, res) => {
+  const { name, position, experience, company, rating, reviews, price, tags, image } = req.body;
+
+  if (!name || !position || !experience || !company || !price || !tags || !image) {
+    return res.json({ success: false, message: "모든 필드를 입력해주세요." });
+  }
+
+  const sql = `
+    INSERT INTO mentors (name, position, experience, company, rating, reviews, price, tags, image)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `;
+
+  const values = [
+    name,
+    position,
+    experience,
+    company,
+    rating,
+    reviews,
+    price,
+    tags,
+    image
+  ];
+
+  mentoringDB.query(sql, values, (err, result) => {
+    if (err) {
+      console.error("멘토 등록 오류:", err);
+      return res.json({ success: false, message: "DB 오류" });
+    }
+    res.json({ success: true, message: "멘토 지원 완료!", id: result.insertId });
+  });
+});
+
+
 
 // ------------------- 스터디 API -------------------
 

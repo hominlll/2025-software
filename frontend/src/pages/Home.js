@@ -53,7 +53,7 @@ const Home = ({ selectedTab, userNickname }) => {
             {/* 멘토링 섹션 */}
             {selectedTab === "mentoring" && (
                 <>
-                    <MentorBanner />
+                    <MentorBanner userNickname={userNickname} />
                     <MentorSection />
                 </>
             )}
