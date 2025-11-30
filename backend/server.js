@@ -11,7 +11,7 @@ const SECRET_KEY = "your_secret_key"; // JWT 비밀키
 app.use(cors());
 app.use(bodyParser.json());
 
-// ✅ MySQL 연결
+// ✅ login_db 연결
 const db = mysql.createConnection({
   host: "localhost",
   user: "root",
@@ -24,7 +24,7 @@ db.connect((err) => {
   if (err) {
     console.error("❌ MySQL 연결 실패:", err);
   } else {
-    console.log("✅ MySQL 연결 성공");
+    console.log("✅ login_db 연결 성공");
   }
 });
 
@@ -36,10 +36,23 @@ const mentoringDB = mysql.createConnection({
   database: "mentoring"
 });
 
-//
+// mentoring_DB 연결 확인
 mentoringDB.connect(err => {
   if (err) console.log("❌ mentoring DB 연결 실패");
   else console.log("✅ mentoring DB 연결 성공");
+});
+
+// study_db 연결
+const studyDB = mysql.createConnection({
+  host: "localhost",
+  user: "root",
+  password: "test1234",
+  database: "study_db"
+});
+
+studyDB.connect(err => {
+  if (err) console.error("❌ study DB 연결 실패");
+  else console.log("✅ study_db 연결 성공");
 });
 
 // ✅ 회원가입
@@ -248,6 +261,41 @@ app.get("/mentors", (req, res) => {
   });
 });
 
+// ------------------- 스터디 API -------------------
+
+// ✅ 스터디 목록 가져오기
+app.get("/api/study", (req, res) => {
+  studyDB.query("SELECT * FROM studies ORDER BY id DESC", (err, results) => {
+    if (err) {
+      console.error("DB error:", err);
+      return res.status(500).send(err);
+    }
+    res.json(results);
+  });
+});
+
+// ✅ 스터디 등록
+app.post("/api/study", (req, res) => {
+  const { studyName, writer, category, deadline, method, duration, maxPeople, description } = req.body;
+
+  if (!studyName || !writer || !category || !deadline || !method || !duration || !maxPeople || !description) {
+    return res.json({ success: false, message: "모든 필드를 입력해주세요." });
+  }
+
+  const sql = `
+    INSERT INTO studies (studyName, writer, category, deadline, method, duration, maxPeople, description)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+  `;
+  const values = [studyName, writer, category, deadline, method, duration, maxPeople, description];
+
+  studyDB.query(sql, values, (err, result) => {
+    if (err) {
+      console.error("스터디 등록 오류:", err);
+      return res.json({ success: false, message: "DB 오류" });
+    }
+    res.json({ success: true, message: "스터디 등록 완료!", id: result.insertId });
+  });
+});
 
 // ✅ 서버 실행
 app.listen(5000, () => {
