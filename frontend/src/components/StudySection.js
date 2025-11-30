@@ -7,7 +7,7 @@ const StudySection = () => {
 
     useEffect(() => {
         axios
-            .get("http://localhost:5000/api/study") // ← 수정됨
+            .get("http://localhost:5000/api/study")
             .then((res) => setStudies(res.data))
             .catch((err) => console.error("스터디 목록 불러오기 오류:", err));
     }, []);
