@@ -3,7 +3,7 @@ import axios from "axios";
 import "./LoginModal.css";
 
 const LoginModal = ({ onClose, onLoginSuccess }) => {
-  const [formType, setFormType] = useState("login"); // login | signup | findId | findPassword
+  const [formType, setFormType] = useState("login");
   const [formData, setFormData] = useState({
     userId: "",
     password: "",
@@ -47,9 +47,10 @@ const LoginModal = ({ onClose, onLoginSuccess }) => {
       switch (formType) {
         case "login":
           localStorage.setItem("user", JSON.stringify(result.user));
-          localStorage.setItem("token", result.token); // ✅ 토큰 저장 추가
+          localStorage.setItem("token", result.token);
+
           setResultMessage("✅ 로그인 성공!");
-          if (onLoginSuccess) onLoginSuccess();
+          if (onLoginSuccess) onLoginSuccess(result.user.nickname); // ⭐ 닉네임 전달
           setTimeout(() => onClose(), 800);
           break;
 
@@ -105,7 +106,6 @@ const LoginModal = ({ onClose, onLoginSuccess }) => {
             </div>
           </>
         );
-
       case "signup":
         return (
           <>
@@ -120,7 +120,6 @@ const LoginModal = ({ onClose, onLoginSuccess }) => {
             <button className="link-btn" onClick={() => switchForm("login")}>로그인 화면으로 돌아가기</button>
           </>
         );
-
       case "findId":
         return (
           <>
@@ -131,7 +130,6 @@ const LoginModal = ({ onClose, onLoginSuccess }) => {
             <button className="link-btn" onClick={() => switchForm("login")}>로그인 화면으로 돌아가기</button>
           </>
         );
-
       case "findPassword":
         return (
           <>
@@ -143,7 +141,6 @@ const LoginModal = ({ onClose, onLoginSuccess }) => {
             <button className="link-btn" onClick={() => switchForm("login")}>로그인 화면으로 돌아가기</button>
           </>
         );
-
       default:
         return null;
     }
@@ -154,15 +151,9 @@ const LoginModal = ({ onClose, onLoginSuccess }) => {
       <div className="modal-container" onClick={(e) => e.stopPropagation()}>
         <img src="/img/logo.png" alt="로고" className="modal-logo" />
         {resultMessage && (
-          <p
-            className={`result-message ${
-              resultMessage.includes("✅")
-                ? "success"
-                : resultMessage.includes("❌") || resultMessage.includes("⚠️")
-                ? "error"
-                : ""
-            }`}
-          >
+          <p className={`result-message ${resultMessage.includes("✅") ? "success" :
+              resultMessage.includes("❌") || resultMessage.includes("⚠️") ? "error" : ""
+            }`}>
             {resultMessage}
           </p>
         )}

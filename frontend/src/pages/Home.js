@@ -30,7 +30,7 @@ const Home = ({ selectedTab, userNickname }) => {
                         <StudyCreateModal
                             onClose={() => setShowStudyModal(false)}
                             onSubmit={handleStudySubmit}
-                            userNickname={userNickname}
+                            userNickname={userNickname} // ⭐ 작성자 표시
                         />
                     )}
                 </>

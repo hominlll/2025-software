@@ -3,18 +3,20 @@ import { useNavigate } from 'react-router-dom';
 import './Header.css';
 import LoginModal from './LoginModal';
 
-const Header = ({ isLoggedIn, setIsLoggedIn, selectedTab, setSelectedTab }) => {
-  const [showModal, setShowModal] = useState(false); // 모달 상태만 내부에서 관리
+const Header = ({ isLoggedIn, setIsLoggedIn, selectedTab, setSelectedTab, setUserNickname }) => {
+  const [showModal, setShowModal] = useState(false);
   const navigate = useNavigate();
 
-  const handleLoginSuccess = () => {
+  // ⭐ 로그인 성공 시 닉네임 상태 업데이트
+  const handleLoginSuccess = (nickname) => {
     setIsLoggedIn(true);
+    setUserNickname(nickname);
     setShowModal(false);
-
   };
 
   const handleLogout = () => {
     setIsLoggedIn(false);
+    setUserNickname(""); // 로그아웃 시 닉네임 초기화
     alert("로그아웃되었습니다.");
   };
 
@@ -32,10 +34,7 @@ const Header = ({ isLoggedIn, setIsLoggedIn, selectedTab, setSelectedTab }) => {
         <div className="center-nav">
           <button
             className={`center-button ${selectedTab === 'mentoring' ? 'active' : ''}`}
-            onClick={() => {
-              setSelectedTab('mentoring');
-              navigate('/');
-            }}
+            onClick={() => { setSelectedTab('mentoring'); navigate('/'); }}
           >
             <img src="/img/mentoring.png" alt="멘토링" className="center-icon" />
             <span>멘토링</span>
@@ -43,10 +42,7 @@ const Header = ({ isLoggedIn, setIsLoggedIn, selectedTab, setSelectedTab }) => {
 
           <button
             className={`center-button ${selectedTab === 'study' ? 'active' : ''}`}
-            onClick={() => {
-              setSelectedTab('study');
-              navigate('/');
-            }}
+            onClick={() => { setSelectedTab('study'); navigate('/'); }}
           >
             <img src="/img/study.png" alt="스터디" className="center-icon" />
             <span>스터디</span>
@@ -54,10 +50,7 @@ const Header = ({ isLoggedIn, setIsLoggedIn, selectedTab, setSelectedTab }) => {
 
           <button
             className={`center-button ${selectedTab === 'community' ? 'active' : ''}`}
-            onClick={() => {
-              setSelectedTab('community');
-              navigate('/community');
-            }}
+            onClick={() => { setSelectedTab('community'); navigate('/community'); }}
           >
             <img src="/img/community.png" alt="커뮤니티" className="center-icon" />
             <span>커뮤니티</span>
@@ -85,7 +78,7 @@ const Header = ({ isLoggedIn, setIsLoggedIn, selectedTab, setSelectedTab }) => {
       {showModal && (
         <LoginModal
           onClose={() => setShowModal(false)}
-          onLoginSuccess={handleLoginSuccess}
+          onLoginSuccess={handleLoginSuccess} // ⭐ 전달
         />
       )}
     </header>

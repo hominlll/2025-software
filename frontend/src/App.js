@@ -1,11 +1,8 @@
-// frontend/src/App.js
 import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Header from './components/Header';
 import CategoryMenu from './components/CategoryMenu';
 import SearchBar from './components/SearchBar';
-import MentorBanner from './components/MentorBanner';
-import StudyBanner from './components/StudyBanner';
 import Home from './pages/Home';
 import MyPage from './pages/MyPage';
 import Community from "./pages/Community";
@@ -13,6 +10,7 @@ import PostDetail from "./components/PostDetail";
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [userNickname, setUserNickname] = useState("");
   const [selectedTab, setSelectedTab] = useState("mentoring");
 
   return (
@@ -29,6 +27,7 @@ function App() {
                 setIsLoggedIn={setIsLoggedIn}
                 selectedTab={selectedTab}
                 setSelectedTab={setSelectedTab}
+                setUserNickname={setUserNickname}
               />
 
               {(selectedTab === "mentoring" || selectedTab === "study") && (
@@ -37,7 +36,7 @@ function App() {
 
               <CategoryMenu />
 
-              <Home selectedTab={selectedTab} userNickname=" " />
+              <Home selectedTab={selectedTab} userNickname={userNickname} /> {/* ⭐ Home에 전달 */}
             </>
           }
         />
@@ -52,6 +51,7 @@ function App() {
                 setIsLoggedIn={setIsLoggedIn}
                 selectedTab={selectedTab}
                 setSelectedTab={setSelectedTab}
+                setUserNickname={setUserNickname}
               />
               <Community />
             </>
