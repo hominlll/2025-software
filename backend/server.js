@@ -15,7 +15,7 @@ app.use(bodyParser.json());
 const db = mysql.createConnection({
   host: "localhost",
   user: "root",
-  password: "test1234", // 🔹 실제 MySQL 비밀번호 확인 필요
+  password: "charming0218", // 🔹 실제 MySQL 비밀번호 확인 필요
   database: "login_db"
 });
 
@@ -32,7 +32,7 @@ db.connect((err) => {
 const mentoringDB = mysql.createConnection({
   host: "localhost",
   user: "root",
-  password: "test1234",
+  password: "charming0218",
   database: "mentoring"
 });
 
@@ -46,7 +46,7 @@ mentoringDB.connect(err => {
 const studyDB = mysql.createConnection({
   host: "localhost",
   user: "root",
-  password: "test1234",
+  password: "charming0218",
   database: "study_db"
 });
 
