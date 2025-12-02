@@ -1,6 +1,5 @@
 // src/components/PostDetail.js
-import React, { useState, useEffect } from "react";
-import axios from "axios";
+import React, { useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import Header from "./Header";
 
@@ -27,33 +26,12 @@ const formatCommentTime = (createdAt) => {
 export default function PostDetail() {
   const navigate = useNavigate();
   const { state } = useLocation();
-  const { id } = useParams(); // 필요 없으면 나중에 지워도 됨
+  const { id } = useParams(); // 필요 없으면 지워도 됨
 
   const post = state?.post;
 
   const [comments, setComments] = useState([]);
   const [commentInput, setCommentInput] = useState("");
-
-  // ✅ DB에서 댓글 불러오기
-  useEffect(() => {
-    if (!post) return; // 포스트 정보 없으면 아무 것도 안 함
-
-    axios
-      .get(`http://localhost:5000/api/community/posts/${post.id}/comments`)
-      .then((res) => {
-        // created_at → createdAt 으로 키만 바꿔서 쓰기
-        const mapped = res.data.map((c) => ({
-          id: c.id,
-          content: c.content,
-          createdAt: c.created_at,
-          userId: c.userId,
-        }));
-        setComments(mapped);
-      })
-      .catch((err) => {
-        console.error("댓글 불러오기 오류:", err);
-      });
-  }, [post]);
 
   if (!post) {
     return (
@@ -76,35 +54,15 @@ export default function PostDetail() {
     );
   }
 
-  const handleAddComment = async () => {
-    if (!commentInput.trim() || !post) return;
-
-    try {
-      const body = {
-        userId: null, // 나중에 로그인 붙이면 localStorage에서 userId 꺼내서 넣으면 됨
-        content: commentInput.trim(),
-      };
-
-      const res = await axios.post(
-        `http://localhost:5000/api/community/posts/${post.id}/comments`,
-        body
-      );
-
-      const saved = res.data; // 서버에서 돌려준 댓글
-
-      const newComment = {
-        id: saved.id,
-        content: saved.content,
-        createdAt: saved.created_at,
-        userId: saved.userId,
-      };
-
-      setComments((prev) => [...prev, newComment]);
-      setCommentInput("");
-    } catch (err) {
-      console.error("댓글 작성 오류:", err);
-      alert("댓글 작성에 실패했습니다 ㅠㅠ");
-    }
+  const handleAddComment = () => {
+    if (!commentInput.trim()) return;
+    const newComment = {
+      id: Date.now(),
+      content: commentInput.trim(),
+      createdAt: new Date().toISOString(),
+    };
+    setComments((prev) => [...prev, newComment]);
+    setCommentInput("");
   };
 
   return (
@@ -132,10 +90,7 @@ export default function PostDetail() {
             <h2 className="text-2xl font-bold mb-2">{post.title}</h2>
 
             <div className="text-xs text-gray-400 flex items-center gap-2 mb-4">
-              {/* created_at으로 오는 경우도 대비 */}
-              <span>
-                {formatPostTime(post.createdAt || post.created_at)}
-              </span>
+              <span>{formatPostTime(post.createdAt)}</span>
               <span>·</span>
               <span>조회 0</span>
             </div>
@@ -172,14 +127,7 @@ export default function PostDetail() {
                             <span className="text-xs text-gray-400">
                               {formatCommentTime(c.createdAt)}
                             </span>
-                          </div>
-                          <button
-                            className="flex items-center gap-1 rounded-full bg-emerald-50 px-3 py-1 
-                                       text-xs font-medium text-emerald-600 hover:bg-emerald-100"
-                          >
-                            <span>👍</span>
-                            <span>0</span>
-                          </button>
+                          </div>                        
                         </div>
                         <p className="whitespace-pre-line text-gray-800 mt-1">
                           {c.content}
