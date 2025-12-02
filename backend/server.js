@@ -524,6 +524,8 @@ app.post("/api/community/posts", async (req, res) => {
   }
 });
 
+// ------------------- ✅ 커뮤니티 댓글 API -------------------
+
 // 댓글 목록 가져오기
 app.get("/api/community/posts/:postId/comments", async (req, res) => {
   const { postId } = req.params;
@@ -536,7 +538,7 @@ app.get("/api/community/posts/:postId/comments", async (req, res) => {
         [postId]
       );
 
-    res.json(rows);
+    res.json(rows); // 그대로 배열 보내기
   } catch (err) {
     console.error("❌ 댓글 목록 조회 오류:", err);
     res.status(500).json({ success: false, message: "서버 오류 발생" });
@@ -562,20 +564,20 @@ app.post("/api/community/posts/:postId/comments", async (req, res) => {
         [postId, userId || null, content]
       );
 
-    const comment = {
+    // 방금 저장된 댓글 정보 돌려주기
+    res.status(201).json({
       id: result.insertId,
       post_id: Number(postId),
       userId: userId || null,
       content,
       created_at: new Date(),
-    };
-
-    res.status(201).json(comment);
+    });
   } catch (err) {
     console.error("❌ 댓글 작성 오류:", err);
     res.status(500).json({ success: false, message: "서버 오류 발생" });
   }
 });
+
 
 /* -------------------- 서버 실행 -------------------- */
 

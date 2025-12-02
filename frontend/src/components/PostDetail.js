@@ -1,5 +1,6 @@
 // src/components/PostDetail.js
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import Header from "./Header";
 
@@ -33,6 +34,28 @@ export default function PostDetail() {
   const [comments, setComments] = useState([]);
   const [commentInput, setCommentInput] = useState("");
 
+  // ✅ DB에서 댓글 불러오기
+  useEffect(() => {
+    if (!post) return; // 포스트 정보 없으면 아무 것도 안 함
+
+    axios
+      .get(`http://localhost:5000/api/community/posts/${post.id}/comments`)
+      .then((res) => {
+        // created_at → createdAt 으로 키만 바꿔서 쓰기
+        const mapped = res.data.map((c) => ({
+          id: c.id,
+          content: c.content,
+          createdAt: c.created_at,
+          userId: c.userId,
+        }));
+        setComments(mapped);
+      })
+      .catch((err) => {
+        console.error("댓글 불러오기 오류:", err);
+      });
+  }, [post]);
+;
+
   if (!post) {
     return (
       <>
@@ -54,16 +77,37 @@ export default function PostDetail() {
     );
   }
 
-  const handleAddComment = () => {
-    if (!commentInput.trim()) return;
-    const newComment = {
-      id: Date.now(),
-      content: commentInput.trim(),
-      createdAt: new Date().toISOString(),
-    };
-    setComments((prev) => [...prev, newComment]);
-    setCommentInput("");
+  const handleAddComment = async () => {
+    if (!commentInput.trim() || !post) return;
+
+    try {
+      const body = {
+        userId: null, // 나중에 로그인 붙이면 localStorage에서 userId 꺼내서 넣으면 됨
+        content: commentInput.trim(),
+      };
+
+      const res = await axios.post(
+        `http://localhost:5000/api/community/posts/${post.id}/comments`,
+        body
+      );
+
+      const saved = res.data; // 서버에서 돌려준 댓글
+
+      const newComment = {
+        id: saved.id,
+        content: saved.content,
+        createdAt: saved.created_at,
+        userId: saved.userId,
+      };
+
+      setComments((prev) => [...prev, newComment]);
+      setCommentInput("");
+    } catch (err) {
+      console.error("댓글 작성 오류:", err);
+      alert("댓글 작성에 실패했습니다 ㅠㅠ");
+    }
   };
+
 
   return (
     <>

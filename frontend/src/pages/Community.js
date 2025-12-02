@@ -11,7 +11,7 @@ export default function Community() {
   const [posts, setPosts] = useState([]);
   const [openModal, setOpenModal] = useState(false);
 
-  // 클릭된 게시글
+  // 클릭된 게시글 (상세 모달용)
   const [selectedPost, setSelectedPost] = useState(null);
 
   // 게시글별 댓글: { [postId]: [comment, ...] }
@@ -26,10 +26,9 @@ export default function Community() {
       .get("http://localhost:5000/api/community/posts")
       .then((res) => {
         // 서버 rows: { id, userId, title, category, content, created_at }
-        // → 프론트에서 쓰기 좋게 createdAt 필드로 매핑
         const mapped = res.data.map((p) => ({
           ...p,
-          createdAt: p.created_at,
+          createdAt: p.created_at, // 프론트에서 쓰기 편하게 이름 바꿔줌
         }));
         setPosts(mapped);
       })
@@ -39,6 +38,34 @@ export default function Community() {
       });
   }, []);
 
+  // ✅ 상세로 선택된 게시글의 댓글을 DB에서 불러오기
+  useEffect(() => {
+    if (!selectedPost) return;
+
+    axios
+      .get(
+        `http://localhost:5000/api/community/posts/${selectedPost.id}/comments`
+      )
+      .then((res) => {
+        // 서버 응답: [{ id, post_id, userId, content, created_at }, ...]
+        const mapped = res.data.map((c) => ({
+          id: c.id,
+          postId: c.post_id,
+          userId: c.userId,
+          content: c.content,
+          createdAt: c.created_at,
+        }));
+
+        setCommentsByPost((prev) => ({
+          ...prev,
+          [selectedPost.id]: mapped,
+        }));
+      })
+      .catch((err) => {
+        console.error("댓글 불러오기 오류:", err);
+      });
+  }, [selectedPost]);
+
   // 카테고리 필터
   const filteredPosts = posts.filter((post) =>
     selectedCategory === "전체" ? true : post.category === selectedCategory
@@ -47,7 +74,6 @@ export default function Community() {
   // ✅ 글 작성 → 백엔드로 저장
   const addPost = async (postFromModal) => {
     try {
-      // PostModal에서 넘겨주는 값: { title, category, content }
       const body = {
         userId: currentUserId,
         title: postFromModal.title,
@@ -63,7 +89,6 @@ export default function Community() {
       // server.js: { success, post } (post.created_at 포함)
       const savedPost = res.data.post;
 
-      // created_at → createdAt 매핑
       const mappedPost = {
         ...savedPost,
         createdAt: savedPost.created_at,
@@ -72,7 +97,6 @@ export default function Community() {
       // 새 글을 목록 맨 앞에 추가
       setPosts((prev) => [mappedPost, ...prev]);
 
-      // 모달 닫기
       setOpenModal(false);
     } catch (err) {
       console.error("글 작성 오류:", err);
@@ -80,21 +104,44 @@ export default function Community() {
     }
   };
 
-  // (지금은 댓글은 프론트 메모리에만 저장)
-  const addCommentToPost = (postId, content) => {
+// ✅ 댓글 작성 → 백엔드로 저장 (익명으로 저장)
+const addCommentToPost = async (postId, content) => {
+  if (!content.trim()) return;
+
+  try {
+    const body = {
+      userId: null,               // ★ FK 문제 피하려고 일단 전부 익명으로 저장
+      content: content.trim(),
+    };
+
+    const res = await axios.post(
+      `http://localhost:5000/api/community/posts/${postId}/comments`,
+      body
+    );
+
+    // 서버 응답: { id, post_id, userId, content, created_at }
+    const saved = res.data;
+
+    const newComment = {
+      id: saved.id,
+      postId: saved.post_id,
+      userId: saved.userId,
+      content: saved.content,
+      createdAt: saved.created_at,
+    };
+
     setCommentsByPost((prev) => {
       const prevComments = prev[postId] || [];
-      const newComment = {
-        id: Date.now(),
-        content,
-        createdAt: new Date().toISOString(),
-      };
       return {
         ...prev,
         [postId]: [...prevComments, newComment],
       };
     });
-  };
+  } catch (err) {
+    console.error("댓글 작성 오류:", err.response?.data || err);
+    alert("댓글 작성에 실패했습니다 ㅠㅠ");
+  }
+};
 
   return (
     <div className="w-full max-w-5xl mx-auto mt-10 px-3">
@@ -109,7 +156,7 @@ export default function Community() {
         <div className="flex-1">
           <PostList
             posts={filteredPosts}
-            onPostClick={(post) => setSelectedPost(post)} // 카드 클릭 시
+            onPostClick={(post) => setSelectedPost(post)} // 카드 클릭 시 상세 열기
           />
         </div>
       </div>
