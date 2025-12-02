@@ -17,8 +17,7 @@ export default function Community() {
   // 게시글별 댓글: { [postId]: [comment, ...] }
   const [commentsByPost, setCommentsByPost] = useState({});
 
-  // ✅ 임시 작성자 ID (지금은 admin으로 저장되도록)
-  // 나중에 로그인한 유저 정보로 바꾸면 됨
+  // ✅ 임시 작성자 ID (나중에 로그인 유저로 교체)
   const currentUserId = "admin";
 
   // ✅ 처음 로드될 때 DB에서 게시글 가져오기
@@ -26,8 +25,13 @@ export default function Community() {
     axios
       .get("http://localhost:5000/api/community/posts")
       .then((res) => {
-        // server.js에서 community_info 전체를 rows로 보내고 있음
-        setPosts(res.data);
+        // 서버 rows: { id, userId, title, category, content, created_at }
+        // → 프론트에서 쓰기 좋게 createdAt 필드로 매핑
+        const mapped = res.data.map((p) => ({
+          ...p,
+          createdAt: p.created_at,
+        }));
+        setPosts(mapped);
       })
       .catch((err) => {
         console.error("게시글 불러오기 오류:", err);
@@ -35,6 +39,7 @@ export default function Community() {
       });
   }, []);
 
+  // 카테고리 필터
   const filteredPosts = posts.filter((post) =>
     selectedCategory === "전체" ? true : post.category === selectedCategory
   );
@@ -42,7 +47,7 @@ export default function Community() {
   // ✅ 글 작성 → 백엔드로 저장
   const addPost = async (postFromModal) => {
     try {
-      // PostModal에서 넘겨주는 값: { title, category, content } 라고 가정
+      // PostModal에서 넘겨주는 값: { title, category, content }
       const body = {
         userId: currentUserId,
         title: postFromModal.title,
@@ -55,11 +60,17 @@ export default function Community() {
         body
       );
 
-      // server.js에서 { success, post } 형태로 돌려줌
+      // server.js: { success, post } (post.created_at 포함)
       const savedPost = res.data.post;
 
+      // created_at → createdAt 매핑
+      const mappedPost = {
+        ...savedPost,
+        createdAt: savedPost.created_at,
+      };
+
       // 새 글을 목록 맨 앞에 추가
-      setPosts((prev) => [savedPost, ...prev]);
+      setPosts((prev) => [mappedPost, ...prev]);
 
       // 모달 닫기
       setOpenModal(false);
@@ -69,6 +80,7 @@ export default function Community() {
     }
   };
 
+  // (지금은 댓글은 프론트 메모리에만 저장)
   const addCommentToPost = (postId, content) => {
     setCommentsByPost((prev) => {
       const prevComments = prev[postId] || [];
