@@ -46,6 +46,17 @@ CREATE TABLE community_info (
     FOREIGN KEY (userId) REFERENCES users(userId)
 );
 
+-- 커뮤니티 댓글 테이블
+ CREATE TABLE community_comments (
+     id INT AUTO_INCREMENT PRIMARY KEY,
+     post_id INT NOT NULL,               -- 어떤 게시글의 댓글인지
+     userId VARCHAR(50),                 -- 댓글 작성자 (일단 nullable, 나중에 로그인 붙여도 됨)
+     content TEXT NOT NULL,              -- 댓글 내용
+     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+     FOREIGN KEY (post_id) REFERENCES community_info(id) ON DELETE CASCADE,
+     FOREIGN KEY (userId) REFERENCES users(userId)
+);
+
 -- 관리자 계정 하나 추가
 INSERT INTO users (userId, password, email, role)
 VALUES ('admin', 'admin123', 'admin@example.com', 'admin');
