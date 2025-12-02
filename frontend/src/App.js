@@ -2,18 +2,17 @@ import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Header from './components/Header';
 import CategoryMenu from './components/CategoryMenu';
-import SearchBar from './components/SearchBar'; 
-import MentorBanner from './components/MentorBanner';
-import StudyBanner from './components/StudyBanner'; // 추가
-import MentorSection from './components/MentorSection';
+import SearchBar from './components/SearchBar';
 import Home from './pages/Home';
 import MyPage from './pages/MyPage';
 import Community from "./pages/Community";
 import PostDetail from "./components/PostDetail";
+import MentorDetailPage from "./pages/MentorDetailPage";  // ⭐ 추가됨
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [selectedTab, setSelectedTab] = useState('mentoring');
+  const [userNickname, setUserNickname] = useState("");
+  const [selectedTab, setSelectedTab] = useState("mentoring");
 
   return (
     <Router>
@@ -24,11 +23,12 @@ function App() {
           path="/"
           element={
             <>
-              <Header 
-                isLoggedIn={isLoggedIn} 
+              <Header
+                isLoggedIn={isLoggedIn}
                 setIsLoggedIn={setIsLoggedIn}
                 selectedTab={selectedTab}
                 setSelectedTab={setSelectedTab}
+                setUserNickname={setUserNickname}
               />
 
               {(selectedTab === "mentoring" || selectedTab === "study") && (
@@ -37,32 +37,30 @@ function App() {
 
               <CategoryMenu />
 
-              {/* 배너 분기 */}
-              {selectedTab === "mentoring" && <MentorBanner />}
-              {selectedTab === "study" && <StudyBanner />}
-
-              <MentorSection />
-              <Home />
+              <Home selectedTab={selectedTab} userNickname={userNickname} />
             </>
           }
         />
+
+        {/* 멘토 상세 페이지 */}
+        <Route path="/mentor/:id" element={<MentorDetailPage />} />
 
         {/* 커뮤니티 */}
         <Route
           path="/community"
           element={
             <>
-              <Header 
-                isLoggedIn={isLoggedIn} 
+              <Header
+                isLoggedIn={isLoggedIn}
                 setIsLoggedIn={setIsLoggedIn}
                 selectedTab={selectedTab}
                 setSelectedTab={setSelectedTab}
+                setUserNickname={setUserNickname}
               />
               <Community />
             </>
           }
         />
-
         <Route path="/community/:id" element={<PostDetail />} />
 
         {/* 마이페이지 */}
