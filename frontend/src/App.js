@@ -1,23 +1,23 @@
-import React, { useState } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import Header from './components/Header';
-import CategoryMenu from './components/CategoryMenu';
-import SearchBar from './components/SearchBar';
-import Home from './pages/Home';
-import MyPage from './pages/MyPage';
+// App.js
+import React, { useState } from "react";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import Header from "./components/Header";
+import CategoryMenu from "./components/CategoryMenu";
+import SearchBar from "./components/SearchBar";
+import StudyBanner from "./components/StudyBanner";
+import MyPage from "./pages/MyPage";
 import Community from "./pages/Community";
 import PostDetail from "./components/PostDetail";
-import MentorDetailPage from "./pages/MentorDetailPage";  // ⭐ 추가됨
+import MentorDetailPage from "./pages/MentorDetailPage";
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userNickname, setUserNickname] = useState("");
-  const [selectedTab, setSelectedTab] = useState("mentoring");
+  const [selectedTab, setSelectedTab] = useState("study");
 
   return (
     <Router>
       <Routes>
-
         {/* 홈 */}
         <Route
           path="/"
@@ -37,7 +37,8 @@ function App() {
 
               <CategoryMenu />
 
-              <Home selectedTab={selectedTab} userNickname={userNickname} />
+              {/* StudyBanner에 userNickname 전달 */}
+              <StudyBanner userNickname={userNickname} />
             </>
           }
         />

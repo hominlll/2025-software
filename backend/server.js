@@ -45,16 +45,21 @@ mentoringDB.connect((err) => {
 
 // ✅ study_db
 const studyDB = mysql.createConnection({
-  host: "localhost",
+  host: "127.0.0.1", // localhost 대신 127.0.0.1 사용
   user: "root",
   password: "hm09080908",
   database: "study_db",
+  port: 3306          // 포트 명시
 });
 
 studyDB.connect((err) => {
-  if (err) console.error("❌ study DB 연결 실패");
-  else console.log("✅ study_db 연결 성공");
+  if (err) {
+    console.error("❌ study DB 연결 실패:", err.code, "-", err.message);
+  } else {
+    console.log("✅ study_db 연결 성공");
+  }
 });
+
 
 /* -------------------- 회원 / 인증 API -------------------- */
 
@@ -408,7 +413,7 @@ app.post("/api/mentor", (req, res) => {
 /* -------------------- 스터디 API -------------------- */
 
 // 스터디 목록
-app.get("/api/study", (req, res) => {
+app.get("/api/studies", (req, res) => {
   studyDB.query("SELECT * FROM studies ORDER BY id DESC", (err, results) => {
     if (err) {
       console.error("DB error:", err);
@@ -419,7 +424,7 @@ app.get("/api/study", (req, res) => {
 });
 
 // 스터디 등록
-app.post("/api/study", (req, res) => {
+app.post("/api/studies", (req, res) => {
   const {
     studyName,
     writer,
