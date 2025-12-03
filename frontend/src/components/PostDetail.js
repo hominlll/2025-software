@@ -135,8 +135,6 @@ export default function PostDetail() {
 
             <div className="text-xs text-gray-400 flex items-center gap-2 mb-4">
               <span>{formatPostTime(post.createdAt)}</span>
-              <span>·</span>
-              <span>조회 0</span>
             </div>
 
             <p className="text-gray-800 text-sm leading-relaxed whitespace-pre-line">
