@@ -11,14 +11,20 @@ export default function Community() {
   const [posts, setPosts] = useState([]);
   const [openModal, setOpenModal] = useState(false);
 
-  // 클릭된 게시글 (상세 모달용)
+  // 클릭된 게시글
   const [selectedPost, setSelectedPost] = useState(null);
 
   // 게시글별 댓글: { [postId]: [comment, ...] }
   const [commentsByPost, setCommentsByPost] = useState({});
 
-  // ✅ 임시 작성자 ID (나중에 로그인 유저로 교체)
+  // 임시 작성자 ID (나중에 로그인 유저로 교체)
   const currentUserId = "admin";
+
+  // 🔍 입력창에 보여지는 텍스트 (타이핑용)
+  const [inputText, setInputText] = useState("");
+
+  // 🔍 실제 검색에 사용하는 키워드 (버튼/엔터 눌렀을 때만 업데이트)
+  const [searchKeyword, setSearchKeyword] = useState("");
 
   // ✅ 처음 로드될 때 DB에서 게시글 가져오기
   useEffect(() => {
@@ -28,7 +34,7 @@ export default function Community() {
         // 서버 rows: { id, userId, title, category, content, created_at }
         const mapped = res.data.map((p) => ({
           ...p,
-          createdAt: p.created_at, // 프론트에서 쓰기 편하게 이름 바꿔줌
+          createdAt: p.created_at,
         }));
         setPosts(mapped);
       })
@@ -38,38 +44,36 @@ export default function Community() {
       });
   }, []);
 
-  // ✅ 상세로 선택된 게시글의 댓글을 DB에서 불러오기
-  useEffect(() => {
-    if (!selectedPost) return;
-
-    axios
-      .get(
-        `http://localhost:5000/api/community/posts/${selectedPost.id}/comments`
-      )
-      .then((res) => {
-        // 서버 응답: [{ id, post_id, userId, content, created_at }, ...]
-        const mapped = res.data.map((c) => ({
-          id: c.id,
-          postId: c.post_id,
-          userId: c.userId,
-          content: c.content,
-          createdAt: c.created_at,
-        }));
-
-        setCommentsByPost((prev) => ({
-          ...prev,
-          [selectedPost.id]: mapped,
-        }));
-      })
-      .catch((err) => {
-        console.error("댓글 불러오기 오류:", err);
-      });
-  }, [selectedPost]);
-
-  // 카테고리 필터
-  const filteredPosts = posts.filter((post) =>
+  // 1차: 카테고리 필터
+  const categoryFiltered = posts.filter((post) =>
     selectedCategory === "전체" ? true : post.category === selectedCategory
   );
+
+  // 2차: 검색어 필터 (제목 + 내용) — 여기서는 **searchKeyword**만 사용!
+  const finalPosts = categoryFiltered.filter((post) => {
+    const keyword = searchKeyword.trim().toLowerCase();
+    if (!keyword) return true; // 검색어 없으면 그대로 전체/카테고리만
+
+    const title = (post.title || "").toLowerCase();
+    const content = (post.content || "").toLowerCase();
+
+    return title.includes(keyword) || content.includes(keyword);
+  });
+
+  // ✅ 검색 버튼 / Enter 눌렀을 때만 필터 적용
+  const triggerSearch = () => {
+    if (!inputText.trim()) {
+      alert("검색어를 입력해주세요.");
+      setSearchKeyword(""); // 검색어 비우면 전체 다시 보여줌
+      return;
+    }
+    setSearchKeyword(inputText); // 이 때만 실제 필터링이 걸림
+  };
+
+  const handleSearchSubmit = (e) => {
+    e.preventDefault(); // form submit 시 새로고침 방지
+    triggerSearch();
+  };
 
   // ✅ 글 작성 → 백엔드로 저장
   const addPost = async (postFromModal) => {
@@ -86,7 +90,6 @@ export default function Community() {
         body
       );
 
-      // server.js: { success, post } (post.created_at 포함)
       const savedPost = res.data.post;
 
       const mappedPost = {
@@ -94,9 +97,7 @@ export default function Community() {
         createdAt: savedPost.created_at,
       };
 
-      // 새 글을 목록 맨 앞에 추가
       setPosts((prev) => [mappedPost, ...prev]);
-
       setOpenModal(false);
     } catch (err) {
       console.error("글 작성 오류:", err);
@@ -104,59 +105,62 @@ export default function Community() {
     }
   };
 
-// ✅ 댓글 작성 → 백엔드로 저장 (익명으로 저장)
-const addCommentToPost = async (postId, content) => {
-  if (!content.trim()) return;
-
-  try {
-    const body = {
-      userId: null,               // ★ FK 문제 피하려고 일단 전부 익명으로 저장
-      content: content.trim(),
-    };
-
-    const res = await axios.post(
-      `http://localhost:5000/api/community/posts/${postId}/comments`,
-      body
-    );
-
-    // 서버 응답: { id, post_id, userId, content, created_at }
-    const saved = res.data;
-
-    const newComment = {
-      id: saved.id,
-      postId: saved.post_id,
-      userId: saved.userId,
-      content: saved.content,
-      createdAt: saved.created_at,
-    };
-
+  // (지금은 댓글은 프론트 메모리에만 저장)
+  const addCommentToPost = (postId, content) => {
     setCommentsByPost((prev) => {
       const prevComments = prev[postId] || [];
+      const newComment = {
+        id: Date.now(),
+        content,
+        createdAt: new Date().toISOString(),
+      };
       return {
         ...prev,
         [postId]: [...prevComments, newComment],
       };
     });
-  } catch (err) {
-    console.error("댓글 작성 오류:", err.response?.data || err);
-    alert("댓글 작성에 실패했습니다 ㅠㅠ");
-  }
-};
+  };
 
   return (
-    <div className="w-full max-w-5xl mx-auto mt-10 px-3">
+    <div className="w-full max-w-5xl mx-auto mt-6 px-3">
+      {/* 🔍 검색창 */}
+      <form
+        onSubmit={handleSearchSubmit}
+        className="w-full flex justify-center mb-6"
+      >
+        <div className="flex items-center w-full max-w-[600px] h-14 rounded-full border border-gray-300 bg-white overflow-hidden shadow-sm">
+          <input
+            type="text"
+            className="flex-1 h-full px-4 text-sm md:text-base outline-none border-none bg-transparent"
+            placeholder="검색어를 입력하세요..."
+            value={inputText} // 입력은 무조건 이 state만 변경
+            onChange={(e) => setInputText(e.target.value)}
+          />
+          <button
+            type="submit"
+            className="w-12 h-12 mr-2 rounded-full bg-[#27ae60] hover:bg-[#219150] flex items-center justify-center transition-colors"
+          >
+            <img
+              src="/img/search.svg"
+              alt="검색"
+              className="w-5 h-5 object-contain"
+            />
+          </button>
+        </div>
+      </form>
+
       <div className="flex gap-8 items-start">
-        <div className="w-32 shrink-0">
+        <div className="w-32 shrink-0 -mt-[60px]">
           <CategoryBar
             selected={selectedCategory}
             setSelected={setSelectedCategory}
           />
         </div>
 
-        <div className="flex-1">
+        <div className="flex-1 -mt-6">
           <PostList
-            posts={filteredPosts}
-            onPostClick={(post) => setSelectedPost(post)} // 카드 클릭 시 상세 열기
+            posts={finalPosts} // ⭐ 카테고리 + (버튼 눌러서 확정된) 검색만 적용된 리스트
+            onPostClick={(post) => setSelectedPost(post)}
           />
         </div>
       </div>
