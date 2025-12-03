@@ -480,6 +480,92 @@ app.post("/api/studies", (req, res) => {
   });
 });
 
+// 단일 스터디 조회
+app.get("/api/studies/:id", (req, res) => {
+  const studyId = req.params.id;
+
+  // 조회수 증가 후 스터디 조회
+  const updateViewsSql = "UPDATE studies SET views = views + 1 WHERE id = ?";
+  const selectStudySql = "SELECT * FROM studies WHERE id = ?";
+
+  studyDB.query(updateViewsSql, [studyId], (err) => {
+    if (err) {
+      console.error("조회수 증가 오류:", err);
+      return res.status(500).json({ success: false, message: "서버 오류" });
+    }
+
+    studyDB.query(selectStudySql, [studyId], (err, results) => {
+      if (err) {
+        console.error("스터디 조회 오류:", err);
+        return res.status(500).json({ success: false, message: "서버 오류" });
+      }
+      if (results.length === 0) {
+        return res.status(404).json({ success: false, message: "스터디를 찾을 수 없습니다." });
+      }
+      res.json({ success: true, study: results[0] });
+    });
+  });
+});
+
+// 댓글 작성
+app.post("/api/studies/:studyId/comments", (req, res) => {
+  const { studyId } = req.params;
+  const { userId, content } = req.body;
+
+  if (!content) {
+    return res.status(400).json({ success: false, message: "댓글 내용을 입력해주세요." });
+  }
+
+  const insertCommentSql = `
+    INSERT INTO study_comments (study_id, userId, content) VALUES (?, ?, ?)
+  `;
+  const updateCommentCountSql = `
+    UPDATE studies SET comment_count = comment_count + 1 WHERE id = ?
+  `;
+
+  studyDB.query(insertCommentSql, [studyId, userId || null, content], (err, result) => {
+    if (err) {
+      console.error("댓글 작성 오류:", err);
+      return res.status(500).json({ success: false, message: "서버 오류" });
+    }
+
+    // 댓글 수 증가
+    studyDB.query(updateCommentCountSql, [studyId], (err) => {
+      if (err) console.error("댓글 수 증가 오류:", err);
+    });
+
+    res.status(201).json({
+      id: result.insertId,
+      study_id: Number(studyId),
+      userId: userId || null,
+      content,
+      created_at: new Date(),
+    });
+  });
+});
+
+// 댓글 삭제시 댓글 수 감소
+app.delete("/api/studies/:studyId/comments/:commentId", (req, res) => {
+  const { studyId, commentId } = req.params;
+
+  const deleteCommentSql = "DELETE FROM study_comments WHERE id = ?";
+  const decrementCommentCountSql = "UPDATE studies SET comment_count = comment_count - 1 WHERE id = ?";
+
+  studyDB.query(deleteCommentSql, [commentId], (err, result) => {
+    if (err) {
+      console.error("댓글 삭제 오류:", err);
+      return res.status(500).json({ success: false, message: "서버 오류" });
+    }
+
+    studyDB.query(decrementCommentCountSql, [studyId], (err) => {
+      if (err) console.error("댓글 수 감소 오류:", err);
+    });
+
+    res.json({ success: true, message: "댓글 삭제 완료" });
+  });
+});
+
+
 /* -------------------- 커뮤니티 게시글 / 댓글 API -------------------- */
 
 // 게시글 목록 가져오기

@@ -12,3 +12,11 @@ CREATE TABLE IF NOT EXISTS studies (
     description TEXT NOT NULL,
     createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+-- 조회수 컬럼 추가 (기본값 0)
+ALTER TABLE studies
+ADD COLUMN views INT NOT NULL DEFAULT 0;
+
+-- 댓글 수 컬럼 추가 (기본값 0)
+ALTER TABLE studies
+ADD COLUMN comment_count INT NOT NULL DEFAULT 0;

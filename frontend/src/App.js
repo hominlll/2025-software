@@ -1,4 +1,3 @@
-// App.js
 import React, { useState } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import Header from "./components/Header";
@@ -9,6 +8,7 @@ import MyPage from "./pages/MyPage";
 import Community from "./pages/Community";
 import PostDetail from "./components/PostDetail";
 import MentorDetailPage from "./pages/MentorDetailPage";
+import StudyDetailPage from "./pages/StudyDetailPage"; // 추가
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -39,6 +39,23 @@ function App() {
 
               {/* StudyBanner에 userNickname 전달 */}
               <StudyBanner userNickname={userNickname} />
+            </>
+          }
+        />
+
+        {/* 스터디 상세 페이지 */}
+        <Route
+          path="/study/:id"
+          element={
+            <>
+              <Header
+                isLoggedIn={isLoggedIn}
+                setIsLoggedIn={setIsLoggedIn}
+                selectedTab={selectedTab}
+                setSelectedTab={setSelectedTab}
+                setUserNickname={setUserNickname}
+              />
+              <StudyDetailPage />
             </>
           }
         />
