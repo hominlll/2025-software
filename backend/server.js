@@ -565,6 +565,28 @@ app.delete("/api/studies/:studyId/comments/:commentId", (req, res) => {
   });
 });
 
+// 🔥 카테고리별 스터디 조회 API
+app.get("/api/studies", (req, res) => {
+  const { category } = req.query;
+
+  let query = "SELECT * FROM studies";
+  let params = [];
+
+  if (category) {
+    query += " WHERE category = ?";
+    params.push(category);
+  }
+
+  studyDB.query(query, params, (err, results) => {
+    if (err) {
+      console.error("❌ 스터디 목록 조회 오류:", err);
+      return res.status(500).json({ error: "서버 오류" });
+    }
+
+    res.json(results);
+  });
+});
+
 
 /* -------------------- 커뮤니티 게시글 / 댓글 API -------------------- */
 

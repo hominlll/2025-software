@@ -22,16 +22,21 @@ const categoryIcons = {
   '면접': '/img/category/면접.png'
 };
 
-const CategoryMenu = () => {
-  const [selectedCategory, setSelectedCategory] = useState('전체');
+const CategoryMenu = ({ setSelectedCategory }) => {
+  const [activeCategory, setActiveCategory] = useState('전체');
+
+  const handleClick = (cat) => {
+    setActiveCategory(cat);
+    setSelectedCategory(cat === '전체' ? null : cat); 
+  };
 
   return (
     <div className="category-menu">
       {categories.map(cat => (
         <button
           key={cat}
-          className={`category-button ${selectedCategory === cat ? 'selected' : ''}`}
-          onClick={() => setSelectedCategory(cat)}
+          className={`category-button ${activeCategory === cat ? 'selected' : ''}`}
+          onClick={() => handleClick(cat)}
         >
           <img src={categoryIcons[cat]} alt={cat} />
           <span>{cat}</span>

@@ -4,21 +4,29 @@ import Header from "./components/Header";
 import CategoryMenu from "./components/CategoryMenu";
 import SearchBar from "./components/SearchBar";
 import StudyBanner from "./components/StudyBanner";
+import MentorBanner from "./components/MentorBanner";
+import StudySection from "./components/StudySection";
+import MentorSection from "./components/MentorSection";
 import MyPage from "./pages/MyPage";
 import Community from "./pages/Community";
 import PostDetail from "./components/PostDetail";
 import MentorDetailPage from "./pages/MentorDetailPage";
-import StudyDetailPage from "./pages/StudyDetailPage"; // 추가
+import StudyDetailPage from "./pages/StudyDetailPage";
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userNickname, setUserNickname] = useState("");
   const [selectedTab, setSelectedTab] = useState("study");
 
+  // ⭐ 카테고리 선택 상태
+  const [selectedCategory, setSelectedCategory] = useState(null);
+
+  // ⭐ StudySection 새로고침 상태 추가!!
+  const [refresh, setRefresh] = useState(0);
+
   return (
     <Router>
       <Routes>
-        {/* 홈 */}
         <Route
           path="/"
           element={
@@ -35,15 +43,34 @@ function App() {
                 <SearchBar selectedTab={selectedTab} />
               )}
 
-              <CategoryMenu />
+              <CategoryMenu setSelectedCategory={setSelectedCategory} />
 
-              {/* StudyBanner에 userNickname 전달 */}
-              <StudyBanner userNickname={userNickname} />
+              {selectedTab === "study" && (
+                <>
+                  {/* refresh 업데이트용 setRefresh 전달 */}
+                  <StudyBanner
+                    userNickname={userNickname}
+                    setRefresh={setRefresh}
+                  />
+
+                  {/* refresh 값 전달 → 스터디 목록 즉시 갱신 */}
+                  <StudySection
+                    selectedCategory={selectedCategory}
+                    refresh={refresh}
+                  />
+                </>
+              )}
+
+              {selectedTab === "mentoring" && (
+                <>
+                  <MentorBanner />
+                  <MentorSection selectedCategory={selectedCategory} />
+                </>
+              )}
             </>
           }
         />
 
-        {/* 스터디 상세 페이지 */}
         <Route
           path="/study/:id"
           element={
@@ -60,10 +87,8 @@ function App() {
           }
         />
 
-        {/* 멘토 상세 페이지 */}
         <Route path="/mentor/:id" element={<MentorDetailPage />} />
 
-        {/* 커뮤니티 */}
         <Route
           path="/community"
           element={
@@ -79,9 +104,9 @@ function App() {
             </>
           }
         />
+
         <Route path="/community/:id" element={<PostDetail />} />
 
-        {/* 마이페이지 */}
         <Route
           path="/mypage"
           element={isLoggedIn ? <MyPage /> : <Navigate to="/" replace />}
