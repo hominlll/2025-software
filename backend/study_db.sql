@@ -1,3 +1,4 @@
+DROP DATABASE IF EXISTS study_db;
 CREATE DATABASE IF NOT EXISTS study_db;
 USE study_db;
 CREATE TABLE IF NOT EXISTS studies (
@@ -10,13 +11,6 @@ CREATE TABLE IF NOT EXISTS studies (
     duration VARCHAR(50) NOT NULL,
     maxPeople INT NOT NULL,
     description TEXT NOT NULL,
-    createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    views INT NOT NULL DEFAULT 0
 );
-
--- 조회수 컬럼 추가 (기본값 0)
-ALTER TABLE studies
-ADD COLUMN views INT NOT NULL DEFAULT 0;
-
--- 댓글 수 컬럼 추가 (기본값 0)
-ALTER TABLE studies
-ADD COLUMN comment_count INT NOT NULL DEFAULT 0;

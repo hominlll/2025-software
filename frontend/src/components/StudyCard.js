@@ -28,7 +28,7 @@ const StudyCard = ({ study }) => {
                 </span>
             </div>
 
-            {/* 마감일 */}
+            {/* 모집 마감일 */}
             <p className="text-sm text-gray-500 mb-1">
                 마감일 | {study.deadline ? new Date(study.deadline).toLocaleDateString() : "미정"}
             </p>
@@ -63,9 +63,6 @@ const StudyCard = ({ study }) => {
                 <div className="flex items-center gap-4">
                     <div className="flex items-center gap-1">
                         👁️ {study.views || 0}
-                    </div>
-                    <div className="flex items-center gap-1">
-                        💬 {study.comments || 0}
                     </div>
                 </div>
             </div>

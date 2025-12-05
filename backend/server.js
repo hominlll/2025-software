@@ -200,7 +200,7 @@ app.post("/api/find-password", async (req, res) => {
   }
 });
 
-// 사용자 정보 조회
+// 사용자 정보 조회 (토큰 기반)
 app.post("/api/user-info", async (req, res) => {
   const token = req.headers.authorization?.split(" ")[1];
   if (!token)
@@ -210,7 +210,7 @@ app.post("/api/user-info", async (req, res) => {
 
   try {
     const decoded = jwt.verify(token, SECRET_KEY);
-    const { userId } = req.body;
+    const userId = decoded.userId; // ← 토큰에서 추출 (중요!)
 
     const [rows] = await db
       .promise()
@@ -224,12 +224,16 @@ app.post("/api/user-info", async (req, res) => {
         .status(404)
         .json({ success: false, message: "사용자를 찾을 수 없습니다." });
 
-    res.json(rows[0]);
+    return res.json({
+      success: true,
+      user: rows[0], // ← 프론트가 기대하는 구조 맞춤
+    });
   } catch (err) {
     console.error("❌ 유저 정보 조회 오류:", err);
     res.status(500).json({ success: false, message: "서버 오류 발생" });
   }
 });
+
 
 // 회원 정보 수정
 app.put("/api/update-user", async (req, res) => {
@@ -412,11 +416,11 @@ app.post("/api/mentor", (req, res) => {
 
 /* -------------------- 스터디 API -------------------- */
 
-// 스터디 목록
+// 스터디 전체 조회
 app.get("/api/studies", (req, res) => {
-  studyDB.query("SELECT * FROM studies ORDER BY id DESC", (err, results) => {
+  studyDB.query("SELECT * FROM studies ORDER BY createdAt DESC", (err, results) => {
     if (err) {
-      console.error("DB error:", err);
+      console.error("❌ study 조회 오류:", err);
       return res.status(500).send(err);
     }
     res.json(results);
@@ -433,160 +437,68 @@ app.post("/api/studies", (req, res) => {
     method,
     duration,
     maxPeople,
-    description,
+    description
   } = req.body;
 
-  if (
-    !studyName ||
-    !writer ||
-    !category ||
-    !deadline ||
-    !method ||
-    !duration ||
-    !maxPeople ||
-    !description
-  ) {
-    return res.json({
-      success: false,
-      message: "모든 필드를 입력해주세요.",
-    });
-  }
+  const sql =
+    "INSERT INTO studies (studyName, writer, category, deadline, method, duration, maxPeople, description) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
 
-  const sql = `
-    INSERT INTO studies (studyName, writer, category, deadline, method, duration, maxPeople, description)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-  `;
-  const values = [
-    studyName,
-    writer,
-    category,
-    deadline,
-    method,
-    duration,
-    maxPeople,
-    description,
-  ];
-
-  studyDB.query(sql, values, (err, result) => {
-    if (err) {
-      console.error("스터디 등록 오류:", err);
-      return res.json({ success: false, message: "DB 오류" });
-    }
-    res.json({
-      success: true,
-      message: "스터디 등록 완료!",
-      id: result.insertId,
-    });
-  });
-});
-
-// 단일 스터디 조회
-app.get("/api/studies/:id", (req, res) => {
-  const studyId = req.params.id;
-
-  // 조회수 증가 후 스터디 조회
-  const updateViewsSql = "UPDATE studies SET views = views + 1 WHERE id = ?";
-  const selectStudySql = "SELECT * FROM studies WHERE id = ?";
-
-  studyDB.query(updateViewsSql, [studyId], (err) => {
-    if (err) {
-      console.error("조회수 증가 오류:", err);
-      return res.status(500).json({ success: false, message: "서버 오류" });
-    }
-
-    studyDB.query(selectStudySql, [studyId], (err, results) => {
+  studyDB.query(
+    sql,
+    [
+      studyName,
+      writer,
+      category,
+      deadline,
+      method,
+      duration,
+      maxPeople,
+      description
+    ],
+    (err, result) => {
       if (err) {
-        console.error("스터디 조회 오류:", err);
-        return res.status(500).json({ success: false, message: "서버 오류" });
+        console.error("❌ 스터디 저장 오류:", err);
+        return res.status(500).send(err);
       }
-      if (results.length === 0) {
-        return res.status(404).json({ success: false, message: "스터디를 찾을 수 없습니다." });
+      res.json({ success: true, id: result.insertId });
+    }
+  );
+});
+
+// 스터디 상세 조회
+app.get("/api/studies/:id", (req, res) => {
+  const { id } = req.params;
+
+  studyDB.query("SELECT * FROM studies WHERE id = ?", [id], (err, results) => {
+    if (err) {
+      console.error("❌ 스터디 상세 조회 오류:", err);
+      return res.status(500).send(err);
+    }
+
+    if (results.length === 0) {
+      return res.status(404).json({ message: "스터디를 찾을 수 없습니다." });
+    }
+
+    res.json(results[0]);
+  });
+});
+
+// 스터디 삭제
+app.delete("/api/studies/:id", (req, res) => {
+  const { id } = req.params;
+
+  studyDB.query(
+    "DELETE FROM studies WHERE id = ?",
+    [id],
+    (err, result) => {
+      if (err) {
+        console.error("❌ 스터디 삭제 오류:", err);
+        return res.status(500).send(err);
       }
-      res.json({ success: true, study: results[0] });
-    });
-  });
-});
-
-// 댓글 작성
-app.post("/api/studies/:studyId/comments", (req, res) => {
-  const { studyId } = req.params;
-  const { userId, content } = req.body;
-
-  if (!content) {
-    return res.status(400).json({ success: false, message: "댓글 내용을 입력해주세요." });
-  }
-
-  const insertCommentSql = `
-    INSERT INTO study_comments (study_id, userId, content) VALUES (?, ?, ?)
-  `;
-  const updateCommentCountSql = `
-    UPDATE studies SET comment_count = comment_count + 1 WHERE id = ?
-  `;
-
-  studyDB.query(insertCommentSql, [studyId, userId || null, content], (err, result) => {
-    if (err) {
-      console.error("댓글 작성 오류:", err);
-      return res.status(500).json({ success: false, message: "서버 오류" });
+      res.json({ success: true, message: "삭제 완료되었습니다." });
     }
-
-    // 댓글 수 증가
-    studyDB.query(updateCommentCountSql, [studyId], (err) => {
-      if (err) console.error("댓글 수 증가 오류:", err);
-    });
-
-    res.status(201).json({
-      id: result.insertId,
-      study_id: Number(studyId),
-      userId: userId || null,
-      content,
-      created_at: new Date(),
-    });
-  });
+  );
 });
-
-// 댓글 삭제시 댓글 수 감소
-app.delete("/api/studies/:studyId/comments/:commentId", (req, res) => {
-  const { studyId, commentId } = req.params;
-
-  const deleteCommentSql = "DELETE FROM study_comments WHERE id = ?";
-  const decrementCommentCountSql = "UPDATE studies SET comment_count = comment_count - 1 WHERE id = ?";
-
-  studyDB.query(deleteCommentSql, [commentId], (err, result) => {
-    if (err) {
-      console.error("댓글 삭제 오류:", err);
-      return res.status(500).json({ success: false, message: "서버 오류" });
-    }
-
-    studyDB.query(decrementCommentCountSql, [studyId], (err) => {
-      if (err) console.error("댓글 수 감소 오류:", err);
-    });
-
-    res.json({ success: true, message: "댓글 삭제 완료" });
-  });
-});
-
-// 🔥 카테고리별 스터디 조회 API
-app.get("/api/studies", (req, res) => {
-  const { category } = req.query;
-
-  let query = "SELECT * FROM studies";
-  let params = [];
-
-  if (category) {
-    query += " WHERE category = ?";
-    params.push(category);
-  }
-
-  studyDB.query(query, params, (err, results) => {
-    if (err) {
-      console.error("❌ 스터디 목록 조회 오류:", err);
-      return res.status(500).json({ error: "서버 오류" });
-    }
-
-    res.json(results);
-  });
-});
-
 
 /* -------------------- 커뮤니티 게시글 / 댓글 API -------------------- */
 

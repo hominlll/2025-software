@@ -101,7 +101,7 @@ export default function StudyCreateModal({ onClose, userNickname }) {
 
           {/* 마감일 */}
           <div>
-            <label className="text-sm font-medium text-gray-700">마감일</label>
+            <label className="text-sm font-medium text-gray-700">모집 마감일</label>
             <input
               type="date"
               value={deadline}
