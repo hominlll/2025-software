@@ -18,7 +18,7 @@ app.use(bodyParser.json());
 const db = mysql.createConnection({
   host: "localhost",
   user: "root",
-  password: "charming0218",
+  password: "hm09080908",
   database: "login_db",
 });
 
@@ -34,7 +34,7 @@ db.connect((err) => {
 const mentoringDB = mysql.createConnection({
   host: "localhost",
   user: "root",
-  password: "charming0218",
+  password: "hm09080908",
   database: "mentoring",
 });
 
@@ -45,16 +45,21 @@ mentoringDB.connect((err) => {
 
 // ✅ study_db
 const studyDB = mysql.createConnection({
-  host: "localhost",
+  host: "127.0.0.1", // localhost 대신 127.0.0.1 사용
   user: "root",
-  password: "charming0218",
+  password: "hm09080908",
   database: "study_db",
+  port: 3306          // 포트 명시
 });
 
 studyDB.connect((err) => {
-  if (err) console.error("❌ study DB 연결 실패");
-  else console.log("✅ study_db 연결 성공");
+  if (err) {
+    console.error("❌ study DB 연결 실패:", err.code, "-", err.message);
+  } else {
+    console.log("✅ study_db 연결 성공");
+  }
 });
+
 
 /* -------------------- 회원 / 인증 API -------------------- */
 
@@ -195,7 +200,7 @@ app.post("/api/find-password", async (req, res) => {
   }
 });
 
-// 사용자 정보 조회
+// 사용자 정보 조회 (토큰 기반)
 app.post("/api/user-info", async (req, res) => {
   const token = req.headers.authorization?.split(" ")[1];
   if (!token)
@@ -205,7 +210,7 @@ app.post("/api/user-info", async (req, res) => {
 
   try {
     const decoded = jwt.verify(token, SECRET_KEY);
-    const { userId } = req.body;
+    const userId = decoded.userId; // ← 토큰에서 추출 (중요!)
 
     const [rows] = await db
       .promise()
@@ -219,12 +224,16 @@ app.post("/api/user-info", async (req, res) => {
         .status(404)
         .json({ success: false, message: "사용자를 찾을 수 없습니다." });
 
-    res.json(rows[0]);
+    return res.json({
+      success: true,
+      user: rows[0], // ← 프론트가 기대하는 구조 맞춤
+    });
   } catch (err) {
     console.error("❌ 유저 정보 조회 오류:", err);
     res.status(500).json({ success: false, message: "서버 오류 발생" });
   }
 });
+
 
 // 회원 정보 수정
 app.put("/api/update-user", async (req, res) => {
@@ -407,11 +416,11 @@ app.post("/api/mentor", (req, res) => {
 
 /* -------------------- 스터디 API -------------------- */
 
-// 스터디 목록
-app.get("/api/study", (req, res) => {
-  studyDB.query("SELECT * FROM studies ORDER BY id DESC", (err, results) => {
+// 스터디 전체 조회
+app.get("/api/studies", (req, res) => {
+  studyDB.query("SELECT * FROM studies ORDER BY createdAt DESC", (err, results) => {
     if (err) {
-      console.error("DB error:", err);
+      console.error("❌ study 조회 오류:", err);
       return res.status(500).send(err);
     }
     res.json(results);
@@ -419,7 +428,7 @@ app.get("/api/study", (req, res) => {
 });
 
 // 스터디 등록
-app.post("/api/study", (req, res) => {
+app.post("/api/studies", (req, res) => {
   const {
     studyName,
     writer,
@@ -428,51 +437,67 @@ app.post("/api/study", (req, res) => {
     method,
     duration,
     maxPeople,
-    description,
+    description
   } = req.body;
 
-  if (
-    !studyName ||
-    !writer ||
-    !category ||
-    !deadline ||
-    !method ||
-    !duration ||
-    !maxPeople ||
-    !description
-  ) {
-    return res.json({
-      success: false,
-      message: "모든 필드를 입력해주세요.",
-    });
-  }
+  const sql =
+    "INSERT INTO studies (studyName, writer, category, deadline, method, duration, maxPeople, description) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
 
-  const sql = `
-    INSERT INTO studies (studyName, writer, category, deadline, method, duration, maxPeople, description)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-  `;
-  const values = [
-    studyName,
-    writer,
-    category,
-    deadline,
-    method,
-    duration,
-    maxPeople,
-    description,
-  ];
-
-  studyDB.query(sql, values, (err, result) => {
-    if (err) {
-      console.error("스터디 등록 오류:", err);
-      return res.json({ success: false, message: "DB 오류" });
+  studyDB.query(
+    sql,
+    [
+      studyName,
+      writer,
+      category,
+      deadline,
+      method,
+      duration,
+      maxPeople,
+      description
+    ],
+    (err, result) => {
+      if (err) {
+        console.error("❌ 스터디 저장 오류:", err);
+        return res.status(500).send(err);
+      }
+      res.json({ success: true, id: result.insertId });
     }
-    res.json({
-      success: true,
-      message: "스터디 등록 완료!",
-      id: result.insertId,
-    });
+  );
+});
+
+// 스터디 상세 조회
+app.get("/api/studies/:id", (req, res) => {
+  const { id } = req.params;
+
+  studyDB.query("SELECT * FROM studies WHERE id = ?", [id], (err, results) => {
+    if (err) {
+      console.error("❌ 스터디 상세 조회 오류:", err);
+      return res.status(500).send(err);
+    }
+
+    if (results.length === 0) {
+      return res.status(404).json({ message: "스터디를 찾을 수 없습니다." });
+    }
+
+    res.json(results[0]);
   });
+});
+
+// 스터디 삭제
+app.delete("/api/studies/:id", (req, res) => {
+  const { id } = req.params;
+
+  studyDB.query(
+    "DELETE FROM studies WHERE id = ?",
+    [id],
+    (err, result) => {
+      if (err) {
+        console.error("❌ 스터디 삭제 오류:", err);
+        return res.status(500).send(err);
+      }
+      res.json({ success: true, message: "삭제 완료되었습니다." });
+    }
+  );
 });
 
 /* -------------------- 커뮤니티 게시글 / 댓글 API -------------------- */

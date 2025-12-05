@@ -12,7 +12,7 @@ const MyPage = () => {
   const user = JSON.parse(localStorage.getItem("user"));
   const token = localStorage.getItem("token");
 
-  // ✅ 사용자 정보 불러오기 (처음 한 번만 실행)
+  // ✅ 사용자 정보 불러오기 (토큰 기반으로 변경됨)
   useEffect(() => {
     if (!user || !token) {
       alert("로그인이 필요합니다.");
@@ -23,15 +23,22 @@ const MyPage = () => {
     axios
       .post(
         "http://localhost:5000/api/user-info",
-        { userId: user.userId },
+        {}, // ← userId 보내지 않음 (토큰에서 읽음)
         { headers: { Authorization: `Bearer ${token}` } }
       )
       .then((res) => {
-        setUserInfo(res.data);
+        if (!res.data.success) {
+          alert("사용자 정보를 불러오지 못했습니다.");
+          return;
+        }
+
+        const u = res.data.user; // ← 서버 구조에 맞게 수정
+        setUserInfo(u);
+
         setEditData({
-          name: res.data.name || "",
-          nickname: res.data.nickname || "",
-          email: res.data.email || "",
+          name: u.name || "",
+          nickname: u.nickname || "",
+          email: u.email || "",
         });
       })
       .catch((err) => {
@@ -39,20 +46,20 @@ const MyPage = () => {
         alert("사용자 정보를 불러오지 못했습니다.");
       })
       .finally(() => setLoading(false));
-  }, []); // ✅ 의존성 없음 → 최초 1회만 실행
+  }, []); // 최초 한번 실행
 
-  // ✅ 정보 수정 (버튼 클릭 시 실행)
+  // ✅ 정보 수정
   const handleUpdate = () => {
     if (!userInfo) return;
+
     axios
       .put(
         "http://localhost:5000/api/update-user",
-        { ...editData, userId: userInfo.userId },
+        { ...editData, userId: userInfo.userId }, // ← userInfo에서 userId 사용
         { headers: { Authorization: `Bearer ${token}` } }
       )
-      .then((res) => {
-        alert("✅ 정보가 성공적으로 수정되었습니다!");
-        // 수정 후 새 데이터 반영
+      .then(() => {
+        alert("정보가 성공적으로 수정되었습니다!");
         setUserInfo((prev) => ({
           ...prev,
           name: editData.name,
@@ -71,7 +78,7 @@ const MyPage = () => {
     axios
       .put(
         "http://localhost:5000/api/change-password",
-        { ...passwordData, userId: user.userId },
+        { ...passwordData, userId: userInfo.userId },
         { headers: { Authorization: `Bearer ${token}` } }
       )
       .then((res) => alert(res.data.message))
@@ -85,11 +92,10 @@ const MyPage = () => {
     axios
       .delete("http://localhost:5000/api/delete-user", {
         headers: { Authorization: `Bearer ${token}` },
-        data: { userId: user.userId },
+        data: { userId: userInfo.userId },
       })
       .then((res) => {
         alert(res.data.message);
-        // ✅ 탈퇴 시에만 로그아웃 및 이동
         localStorage.clear();
         window.location.replace("/");
       })
@@ -101,7 +107,7 @@ const MyPage = () => {
 
   return (
     <div className="mypage-container">
-      {/* ✅ 사이드바 */}
+      {/* 사이드바 */}
       <div className="mypage-sidebar">
         <button
           className={activeSection === "info" ? "active" : ""}
@@ -129,7 +135,7 @@ const MyPage = () => {
         </button>
       </div>
 
-      {/* ✅ 콘텐츠 */}
+      {/* 콘텐츠 */}
       <div className="mypage-content">
         {activeSection === "info" && (
           <section>
@@ -138,7 +144,10 @@ const MyPage = () => {
             <div className="info-item"><label>이름</label><p>{userInfo.name}</p></div>
             <div className="info-item"><label>닉네임</label><p>{userInfo.nickname}</p></div>
             <div className="info-item"><label>이메일</label><p>{userInfo.email}</p></div>
-            <div className="info-item"><label>가입일</label><p>{new Date(userInfo.join_date).toLocaleDateString()}</p></div>
+            <div className="info-item">
+              <label>가입일</label>
+              <p>{new Date(userInfo.join_date).toLocaleDateString()}</p>
+            </div>
           </section>
         )}
 
