@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 
-const StudyDetailPage = () => {
+const StudyDetailPage = ({ currentUserId, userNickname }) => {
   const { id } = useParams();
   const navigate = useNavigate();
 
@@ -12,7 +12,6 @@ const StudyDetailPage = () => {
   const [participants, setParticipants] = useState([]);
   const [isJoined, setIsJoined] = useState(false);
 
-  // 조회수 증가 함수
   const increaseViews = async () => {
     try {
       await axios.post(`http://localhost:5000/api/studies/${id}/views`);
@@ -21,7 +20,6 @@ const StudyDetailPage = () => {
     }
   };
 
-  // 페이지 로드 시 데이터 불러오기
   useEffect(() => {
     const token = localStorage.getItem("token");
 
@@ -42,7 +40,14 @@ const StudyDetailPage = () => {
     const fetchStudy = async () => {
       try {
         const res = await axios.get(`http://localhost:5000/api/studies/${id}`);
-        setStudy(res.data);
+        let fetchedStudy = res.data;
+
+        // 로그인 유저가 작성자면 writer를 최신 닉네임으로 덮어쓰기
+        if (currentUser && fetchedStudy.userId === currentUser.userId) {
+          fetchedStudy = { ...fetchedStudy, writer: currentUser.nickname };
+        }
+
+        setStudy(fetchedStudy);
       } catch {
         setStudy(null);
       } finally {
@@ -52,35 +57,47 @@ const StudyDetailPage = () => {
 
     const fetchParticipants = async () => {
       try {
-        const res = await axios.get(
-          `http://localhost:5000/api/study/${id}/participants`
-        );
-        if (res.data.success) setParticipants(res.data.participants);
-        else setParticipants([]);
+        const res = await axios.get(`http://localhost:5000/api/study/${id}/participants`);
+        if (res.data.success) {
+          let fetchedParticipants = res.data.participants;
+
+          // 참여자 목록에서 로그인 유저 닉네임 최신화
+          if (currentUser) {
+            fetchedParticipants = fetchedParticipants.map(p =>
+              p.userId === currentUser.userId ? { ...p, nickname: currentUser.nickname } : p
+            );
+          }
+
+          setParticipants(fetchedParticipants);
+        } else {
+          setParticipants([]);
+        }
       } catch (err) {
         console.error("참여자 조회 오류:", err);
         setParticipants([]);
       }
     };
 
-    fetchCurrentUser();
-    fetchStudy();
-    fetchParticipants();
-    increaseViews(); // <-- 조회수 증가 실행!
-  }, [id]);
+    fetchCurrentUser().then(() => {
+      fetchStudy();
+      fetchParticipants();
+      increaseViews();
+    });
+  }, [id, currentUser?.userId, currentUser?.nickname]);
 
-  // 참여 여부 체크
   useEffect(() => {
     if (currentUser) {
-      const joined = participants.some(
-        (p) => p.userId === currentUser.userId
-      );
+      const joined = participants.some(p => p.userId === currentUser.userId);
       setIsJoined(joined);
     }
   }, [currentUser, participants]);
 
-  // 참여하기
   const handleJoin = async () => {
+    if (!study || !currentUser) return;
+    const now = new Date();
+    const deadline = study.deadline ? new Date(study.deadline) : null;
+    if (study.maxPeople - participants.length <= 0 || (deadline && deadline <= now)) return;
+
     try {
       const token = localStorage.getItem("token");
       const res = await axios.post(
@@ -90,10 +107,7 @@ const StudyDetailPage = () => {
       );
 
       if (res.data.success) {
-        setParticipants((prev) => [
-          ...prev,
-          { userId: currentUser.userId, nickname: currentUser.nickname },
-        ]);
+        setParticipants(prev => [...prev, { userId: currentUser.userId, nickname: currentUser.nickname }]);
         setIsJoined(true);
         alert("스터디에 참여했습니다.");
       } else {
@@ -105,8 +119,8 @@ const StudyDetailPage = () => {
     }
   };
 
-  // 참여 취소
   const handleCancel = async () => {
+    if (!currentUser) return;
     try {
       const token = localStorage.getItem("token");
       const res = await axios.post(
@@ -116,9 +130,7 @@ const StudyDetailPage = () => {
       );
 
       if (res.data.success) {
-        setParticipants((prev) =>
-          prev.filter((p) => p.userId !== currentUser.userId)
-        );
+        setParticipants(prev => prev.filter(p => p.userId !== currentUser.userId));
         setIsJoined(false);
         alert("참여를 취소했습니다.");
       } else {
@@ -130,7 +142,6 @@ const StudyDetailPage = () => {
     }
   };
 
-  // 스터디 삭제
   const handleDelete = async () => {
     if (!window.confirm("정말 삭제하시겠습니까?")) return;
     try {
@@ -152,6 +163,10 @@ const StudyDetailPage = () => {
   if (loading) return <p className="text-center py-10">로딩 중...</p>;
   if (!study) return <p className="text-center py-10">스터디를 찾을 수 없습니다.</p>;
 
+  const now = new Date();
+  const deadline = study.deadline ? new Date(study.deadline) : null;
+  const isFullOrDeadlinePassed = (study.maxPeople - participants.length <= 0) || (deadline && deadline <= now);
+
   return (
     <div className="w-[70%] mx-auto py-8">
       {/* 뒤로가기 + 삭제 버튼 */}
@@ -163,16 +178,14 @@ const StudyDetailPage = () => {
           ← 뒤로가기
         </button>
 
-        {currentUser &&
-          study.writer &&
-          currentUser.nickname.trim() === study.writer.trim() && (
-            <button
-              className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-300"
-              onClick={handleDelete}
-            >
-              스터디 삭제
-            </button>
-          )}
+        {currentUser && study.userId === currentUser.userId && (
+          <button
+            className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-300"
+            onClick={handleDelete}
+          >
+            스터디 삭제
+          </button>
+        )}
       </div>
 
       {/* 기본 정보 카드 */}
@@ -193,7 +206,7 @@ const StudyDetailPage = () => {
           <div className="font-medium">마감일</div>
           <div>{study.deadline ? new Date(study.deadline).toLocaleDateString() : "미정"}</div>
 
-          <div className="font-medium">예상 기간</div>
+          <div className="font-medium">활동 예상 기간</div>
           <div>{study.duration || "미정"}</div>
 
           <div className="font-medium">진행 방식</div>
@@ -211,27 +224,30 @@ const StudyDetailPage = () => {
 
       {/* 참여자 카드 */}
       <div className="bg-white p-6 rounded-2xl shadow-md">
-        {currentUser &&
-          study.writer &&
-          currentUser.nickname.trim() !== study.writer.trim() && (
-            <div className="mb-4">
-              {!isJoined ? (
-                <button
-                  className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-300"
-                  onClick={handleJoin}
-                >
-                  참여하기
-                </button>
-              ) : (
-                <button
-                  className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-300"
-                  onClick={handleCancel}
-                >
-                  참여 취소
-                </button>
-              )}
-            </div>
-          )}
+        {currentUser && study.userId !== currentUser.userId && (
+          <div className="mb-4">
+            {!isJoined ? (
+              <button
+                className={`px-4 py-2 text-white rounded ${
+                  isFullOrDeadlinePassed
+                    ? "bg-gray-500 cursor-not-allowed"
+                    : "bg-blue-500 hover:bg-blue-400"
+                }`}
+                onClick={handleJoin}
+                disabled={isFullOrDeadlinePassed}
+              >
+                참여하기
+              </button>
+            ) : (
+              <button
+                className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-300"
+                onClick={handleCancel}
+              >
+                참여 취소
+              </button>
+            )}
+          </div>
+        )}
 
         <h2 className="text-lg font-semibold border-b border-gray-300 pb-1 mb-2">
           참여자 ({participants.length})

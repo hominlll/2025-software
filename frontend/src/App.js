@@ -16,12 +16,12 @@ import StudyDetailPage from "./pages/StudyDetailPage";
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userNickname, setUserNickname] = useState("");
+  const [currentUserId, setCurrentUserId] = useState(null);
   const [selectedTab, setSelectedTab] = useState("study");
 
-  // ⭐ 카테고리 선택 상태
   const [selectedCategory, setSelectedCategory] = useState(null);
-
-  // ⭐ StudySection 새로고침 상태 추가!!
+  const [selectedStatus, setSelectedStatus] = useState(null);
+  const [searchText, setSearchText] = useState("");
   const [refresh, setRefresh] = useState(0);
 
   return (
@@ -37,26 +37,65 @@ function App() {
                 selectedTab={selectedTab}
                 setSelectedTab={setSelectedTab}
                 setUserNickname={setUserNickname}
+                setCurrentUserId={setCurrentUserId}
               />
 
-              {(selectedTab === "mentoring" || selectedTab === "study") && (
-                <SearchBar selectedTab={selectedTab} />
+              {(selectedTab === "study" || selectedTab === "mentoring") && (
+                <SearchBar
+                  placeholder={selectedTab === "study" ? "스터디 검색..." : "멘토링 검색..."}
+                  onSearch={setSearchText}
+                />
               )}
 
               <CategoryMenu setSelectedCategory={setSelectedCategory} />
 
               {selectedTab === "study" && (
                 <>
-                  {/* refresh 업데이트용 setRefresh 전달 */}
-                  <StudyBanner
-                    userNickname={userNickname}
-                    setRefresh={setRefresh}
-                  />
+                  <StudyBanner userNickname={userNickname} setRefresh={setRefresh} />
 
-                  {/* refresh 값 전달 → 스터디 목록 즉시 갱신 */}
+                  <div className="w-[70%] mx-auto flex gap-2 mb-6 justify-start">
+                    {["모집중", "마감임박", "모집마감"].map((status) => {
+                      let bgColor = "";
+                      if (status === "모집중") bgColor = "bg-green-500";
+                      else if (status === "마감임박") bgColor = "bg-yellow-500";
+                      else if (status === "모집마감") bgColor = "bg-red-500";
+
+                      const isSelected = selectedStatus === status;
+
+                      return (
+                        <button
+                          key={status}
+                          onClick={() => setSelectedStatus(status)}
+                          className={`px-4 py-2 rounded-full font-medium border transition 
+                            ${isSelected
+                              ? `${bgColor} text-white border-none cursor-default`
+                              : "bg-white text-gray-700 border-gray-300 hover:bg-gray-100"
+                            }`}
+                        >
+                          {status}
+                        </button>
+                      );
+                    })}
+
+                    <button
+                      onClick={() => setSelectedStatus(null)}
+                      className={`px-4 py-2 rounded-full font-medium border transition 
+                        ${selectedStatus === null
+                          ? "bg-gray-500 text-white border-none cursor-default"
+                          : "bg-white text-gray-700 border-gray-300 hover:bg-gray-100"
+                        }`}
+                    >
+                      전체
+                    </button>
+                  </div>
+
                   <StudySection
                     selectedCategory={selectedCategory}
+                    selectedStatus={selectedStatus}
+                    searchText={searchText}
                     refresh={refresh}
+                    userNickname={userNickname}
+                    currentUserId={currentUserId}
                   />
                 </>
               )}
@@ -64,7 +103,10 @@ function App() {
               {selectedTab === "mentoring" && (
                 <>
                   <MentorBanner />
-                  <MentorSection selectedCategory={selectedCategory} />
+                  <MentorSection
+                    selectedCategory={selectedCategory}
+                    searchText={searchText}
+                  />
                 </>
               )}
             </>
@@ -81,6 +123,7 @@ function App() {
                 selectedTab={selectedTab}
                 setSelectedTab={setSelectedTab}
                 setUserNickname={setUserNickname}
+                setCurrentUserId={setCurrentUserId}
               />
               <StudyDetailPage />
             </>
@@ -88,7 +131,6 @@ function App() {
         />
 
         <Route path="/mentor/:id" element={<MentorDetailPage />} />
-
         <Route
           path="/community"
           element={
@@ -99,17 +141,20 @@ function App() {
                 selectedTab={selectedTab}
                 setSelectedTab={setSelectedTab}
                 setUserNickname={setUserNickname}
+                setCurrentUserId={setCurrentUserId}
               />
               <Community />
             </>
           }
         />
-
         <Route path="/community/:id" element={<PostDetail />} />
-
         <Route
           path="/mypage"
-          element={isLoggedIn ? <MyPage /> : <Navigate to="/" replace />}
+          element={isLoggedIn ? (
+            <MyPage userNickname={userNickname} setUserNickname={setUserNickname} currentUserId={currentUserId} />
+          ) : (
+            <Navigate to="/" replace />
+          )}
         />
       </Routes>
     </Router>

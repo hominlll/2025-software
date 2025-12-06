@@ -2,7 +2,14 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import StudyCard from "./StudyCard";
 
-const StudySection = ({ refresh, selectedCategory }) => {
+const StudySection = ({
+  refresh,
+  selectedCategory,
+  searchText,
+  selectedStatus,
+  userNickname,
+  currentUserId
+}) => {
   const [studies, setStudies] = useState([]);
 
   useEffect(() => {
@@ -14,25 +21,54 @@ const StudySection = ({ refresh, selectedCategory }) => {
         console.error("스터디 목록 불러오기 오류:", err);
       }
     };
-
     fetchStudies();
-  }, [refresh]);  // ← 등록 후 refresh가 바뀌면 목록 새로고침
+  }, [refresh]);
 
-  // ⭐ 카테고리 필터링 로직 수정!
-  const filteredStudies =
+  let filtered =
     !selectedCategory || selectedCategory === "전체"
       ? studies
       : studies.filter((study) => study.category === selectedCategory);
 
+  if (searchText) {
+    const lower = searchText.toLowerCase();
+    filtered = filtered.filter((study) =>
+      study.studyName.toLowerCase().includes(lower)
+    );
+  }
+
+  if (selectedStatus) {
+    const now = new Date();
+    filtered = filtered.filter((study) => {
+      const deadline = study.deadline ? new Date(study.deadline) : null;
+      const remainingSpots = study.maxPeople - study.participantCount;
+
+      switch (selectedStatus) {
+        case "모집중":
+          return remainingSpots > 0 && (!deadline || deadline > now);
+        case "마감임박":
+          return remainingSpots > 0 && (remainingSpots === 1 || (deadline && (deadline - now)/(1000*60*60*24) <= 1));
+        case "모집마감":
+          return remainingSpots <= 0 || (deadline && deadline <= now);
+        default:
+          return true;
+      }
+    });
+  }
+
   return (
     <div className="w-[70%] mx-auto py-8">
-      {filteredStudies.length === 0 ? (
+      {filtered.length === 0 ? (
         <p className="text-gray-500 text-center">등록된 스터디가 없습니다.</p>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 justify-items-center">
-          {filteredStudies.map((study) => (
-            <StudyCard key={study.id} study={study} />
-          ))}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 justify-items-center">
+          {filtered.map((study) => {
+            const displayStudy =
+              study.userId === currentUserId
+                ? { ...study, writer: userNickname }
+                : study;
+
+            return <StudyCard key={study.id} study={displayStudy} />;
+          })}
         </div>
       )}
     </div>

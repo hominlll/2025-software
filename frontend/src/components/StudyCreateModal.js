@@ -129,7 +129,7 @@ export default function StudyCreateModal({ onClose, userNickname }) {
 
           {/* 예상 기간 */}
           <div>
-            <label className="text-sm font-medium text-gray-700">예상 기간</label>
+            <label className="text-sm font-medium text-gray-700">활동 예상 기간</label>
             <input
               type="text"
               placeholder="예: 4주, 2개월"

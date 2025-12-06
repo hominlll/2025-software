@@ -248,12 +248,33 @@ app.put("/api/update-user", async (req, res) => {
   try {
     const decoded = jwt.verify(token, SECRET_KEY);
 
+    // 현재 닉네임 조회
+    const [current] = await db.promise().query(
+      "SELECT nickname FROM users WHERE userId = ?",
+      [userId]
+    );
+    if (current.length === 0) 
+      return res.status(404).json({ success: false, message: "사용자를 찾을 수 없습니다." });
+
+    const oldNickname = current[0].nickname;
+
+    // users 테이블 업데이트
     await db
       .promise()
       .query(
         "UPDATE users SET name = ?, nickname = ?, email = ? WHERE userId = ?",
         [name, nickname, email, userId]
       );
+
+    // nickname 변경 시 studies 테이블 writer도 함께 업데이트
+    if (oldNickname !== nickname) {
+      await studyDB
+        .promise()
+        .query(
+          "UPDATE studies SET writer = ? WHERE writer = ?",
+          [nickname, oldNickname]
+        );
+    }
 
     res.json({ success: true, message: "회원 정보가 수정되었습니다." });
   } catch (err) {
@@ -682,6 +703,48 @@ app.post("/api/community/posts", async (req, res) => {
     res.status(201).json({ success: true, post });
   } catch (err) {
     console.error("❌ 커뮤니티 글 작성 오류:", err);
+    res.status(500).json({ success: false, message: "서버 오류 발생" });
+  }
+});
+
+// 내 스터디 + 참여중인 스터디 조회
+app.get("/api/user-studies", async (req, res) => {
+  const token = req.headers.authorization?.split(" ")[1];
+  if (!token) return res.status(401).json({ success: false, message: "토큰이 없습니다." });
+
+  try {
+    const decoded = jwt.verify(token, SECRET_KEY);
+    const userId = decoded.userId;
+
+    // users 테이블에서 닉네임 가져오기
+    const [userRows] = await db.promise().query("SELECT nickname FROM users WHERE userId = ?", [userId]);
+    if (userRows.length === 0) return res.status(404).json({ success: false, message: "사용자를 찾을 수 없습니다." });
+    const nickname = userRows[0].nickname;
+
+    // 내가 만든 스터디 조회 (writer가 닉네임인 경우)
+    const [myStudies] = await studyDB.promise().query(
+      `SELECT s.*, 
+        (SELECT COUNT(*) FROM study_participants sp WHERE sp.studyId = s.id) AS participantCount
+       FROM studies s
+       WHERE s.writer = ?
+       ORDER BY s.createdAt DESC`, 
+      [nickname]
+    );
+
+    // 내가 참여한 스터디 조회
+    const [joinedStudies] = await studyDB.promise().query(
+      `SELECT s.*, 
+        (SELECT COUNT(*) FROM study_participants sp WHERE sp.studyId = s.id) AS participantCount
+       FROM study_participants sp
+       JOIN studies s ON sp.studyId = s.id
+       WHERE sp.userId = ?
+       ORDER BY s.createdAt DESC`,
+      [userId]
+    );
+
+    res.json({ success: true, myStudies, joinedStudies });
+  } catch (err) {
+    console.error("❌ 내 스터디 조회 오류:", err);
     res.status(500).json({ success: false, message: "서버 오류 발생" });
   }
 });
