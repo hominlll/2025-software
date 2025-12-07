@@ -190,7 +190,10 @@ const StudyDetailPage = ({ currentUserId, userNickname }) => {
 
   const now = new Date();
   const deadline = study.deadline ? new Date(study.deadline) : null;
-  const isFullOrDeadlinePassed = (study.maxPeople - participants.length <= 0) || (deadline && deadline <= now);
+  const today = new Date();
+  today.setHours(0,0,0,0);
+  const deadlineDate = deadline ? new Date(deadline) : null;
+  const isFullOrDeadlinePassed = (study.maxPeople - participants.length <= 0) || (deadlineDate && deadlineDate < today);
 
   return (
     <div className="w-[70%] mx-auto py-8">
