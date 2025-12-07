@@ -12,12 +12,14 @@ const Header = ({ isLoggedIn, setIsLoggedIn, selectedTab, setSelectedTab, setUse
     setIsLoggedIn(true);
     setUserNickname(nickname);
     setShowModal(false);
+    navigate("/");
   };
 
   const handleLogout = () => {
     setIsLoggedIn(false);
     setUserNickname(""); // 로그아웃 시 닉네임 초기화
     alert("로그아웃되었습니다.");
+    navigate("/");
   };
 
   const handleMyPage = () => {

@@ -20,6 +20,7 @@ const StudyDetailPage = ({ currentUserId, userNickname }) => {
     }
   };
 
+  // ================== 유저/스터디/참여자 정보 불러오기 ==================
   useEffect(() => {
     const token = localStorage.getItem("token");
 
@@ -42,7 +43,6 @@ const StudyDetailPage = ({ currentUserId, userNickname }) => {
         const res = await axios.get(`http://localhost:5000/api/studies/${id}`);
         let fetchedStudy = res.data;
 
-        // 로그인 유저가 작성자면 writer를 최신 닉네임으로 덮어쓰기
         if (currentUser && fetchedStudy.userId === currentUser.userId) {
           fetchedStudy = { ...fetchedStudy, writer: currentUser.nickname };
         }
@@ -61,7 +61,6 @@ const StudyDetailPage = ({ currentUserId, userNickname }) => {
         if (res.data.success) {
           let fetchedParticipants = res.data.participants;
 
-          // 참여자 목록에서 로그인 유저 닉네임 최신화
           if (currentUser) {
             fetchedParticipants = fetchedParticipants.map(p =>
               p.userId === currentUser.userId ? { ...p, nickname: currentUser.nickname } : p
@@ -85,6 +84,7 @@ const StudyDetailPage = ({ currentUserId, userNickname }) => {
     });
   }, [id, currentUser?.userId, currentUser?.nickname]);
 
+  // ================== 참여 여부 체크 ==================
   useEffect(() => {
     if (currentUser) {
       const joined = participants.some(p => p.userId === currentUser.userId);
@@ -92,6 +92,7 @@ const StudyDetailPage = ({ currentUserId, userNickname }) => {
     }
   }, [currentUser, participants]);
 
+  // ================== 참여/취소 ==================
   const handleJoin = async () => {
     if (!study || !currentUser) return;
     const now = new Date();
@@ -142,6 +143,7 @@ const StudyDetailPage = ({ currentUserId, userNickname }) => {
     }
   };
 
+  // ================== 스터디 삭제 ==================
   const handleDelete = async () => {
     if (!window.confirm("정말 삭제하시겠습니까?")) return;
     try {
@@ -160,12 +162,38 @@ const StudyDetailPage = ({ currentUserId, userNickname }) => {
     }
   };
 
+  // ================== 참여자 강제퇴장 ==================
+  const handleKickParticipant = async (userId) => {
+    if (!window.confirm("정말 이 참여자를 강제퇴장시키겠습니까?")) return;
+
+    try {
+      const token = localStorage.getItem("token");
+      const res = await axios.delete(
+        `http://localhost:5000/api/study/${study.id}/participant/${userId}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      if (res.data.success) {
+        setParticipants(prev => prev.filter(p => p.userId !== userId));
+        alert("참여자가 강제퇴장 되었습니다.");
+      } else {
+        alert(res.data.message);
+      }
+    } catch (err) {
+      console.error(err);
+      alert("강제퇴장 중 오류가 발생했습니다.");
+    }
+  };
+
   if (loading) return <p className="text-center py-10">로딩 중...</p>;
   if (!study) return <p className="text-center py-10">스터디를 찾을 수 없습니다.</p>;
 
   const now = new Date();
   const deadline = study.deadline ? new Date(study.deadline) : null;
-  const isFullOrDeadlinePassed = (study.maxPeople - participants.length <= 0) || (deadline && deadline <= now);
+  const today = new Date();
+  today.setHours(0,0,0,0);
+  const deadlineDate = deadline ? new Date(deadline) : null;
+  const isFullOrDeadlinePassed = (study.maxPeople - participants.length <= 0) || (deadlineDate && deadlineDate < today);
 
   return (
     <div className="w-[70%] mx-auto py-8">
@@ -178,7 +206,7 @@ const StudyDetailPage = ({ currentUserId, userNickname }) => {
           ← 뒤로가기
         </button>
 
-        {currentUser && study.userId === currentUser.userId && (
+        {currentUser && study.writer === currentUser.nickname && (
           <button
             className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-300"
             onClick={handleDelete}
@@ -214,6 +242,22 @@ const StudyDetailPage = ({ currentUserId, userNickname }) => {
 
           <div className="font-medium">모집 인원</div>
           <div>{study.maxPeople}명</div>
+
+          {/* 🔥 문의 링크 — 작성자 또는 참여자만 표시 */}
+          {study.contactLink &&
+            currentUser &&
+            (study.writer === currentUser.nickname || isJoined) && (
+              <div className="col-span-2 mt-2 p-3 bg-blue-50 rounded text-blue-600">
+                연락 및 문의 :{" "}
+                <a
+                  href={study.contactLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  {study.contactLink}
+                </a>
+              </div>
+            )}
         </div>
 
         <h2 className="text-lg font-semibold border-b border-gray-300 pb-1 mb-2">
@@ -224,7 +268,8 @@ const StudyDetailPage = ({ currentUserId, userNickname }) => {
 
       {/* 참여자 카드 */}
       <div className="bg-white p-6 rounded-2xl shadow-md">
-        {currentUser && study.userId !== currentUser.userId && (
+        {/* 참여 버튼: 작성자는 안 보이도록 수정 */}
+        {currentUser && study.writer !== currentUser.nickname && (
           <div className="mb-4">
             {!isJoined ? (
               <button
@@ -236,7 +281,7 @@ const StudyDetailPage = ({ currentUserId, userNickname }) => {
                 onClick={handleJoin}
                 disabled={isFullOrDeadlinePassed}
               >
-                참여하기
+                {isFullOrDeadlinePassed ? "모집 마감" : "참여하기"}
               </button>
             ) : (
               <button
@@ -254,7 +299,19 @@ const StudyDetailPage = ({ currentUserId, userNickname }) => {
         </h2>
         <ul className="list-disc list-inside text-gray-700">
           {participants.map((p) => (
-            <li key={p.userId}>{p.nickname || p.userId}</li>
+            <li key={p.userId} className="flex items-center justify-between">
+              <span>{p.nickname || p.userId}</span>
+
+              {/* 작성자만 강제퇴장 버튼 표시, 자기 자신 제외 */}
+              {currentUser && study.writer === currentUser.nickname && p.userId !== currentUser.userId && (
+                <button
+                  className="ml-2 px-2 py-1 text-sm text-white bg-red-500 rounded hover:bg-red-400"
+                  onClick={() => handleKickParticipant(p.userId)}
+                >
+                  강제퇴장
+                </button>
+              )}
+            </li>
           ))}
         </ul>
       </div>

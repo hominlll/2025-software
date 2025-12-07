@@ -17,7 +17,7 @@ function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userNickname, setUserNickname] = useState("");
   const [currentUserId, setCurrentUserId] = useState(null);
-  const [selectedTab, setSelectedTab] = useState("study");
+  const [selectedTab, setSelectedTab] = useState("mentoring");
 
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [selectedStatus, setSelectedStatus] = useState(null);

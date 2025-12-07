@@ -9,15 +9,20 @@ const StudyCard = ({ study }) => {
   const views = study.views ?? 0;
 
   const remainingSpots = maxPeople - participantsCount;
-  const now = new Date();
+
+  // 오늘 날짜만 비교하도록 변경
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
   const deadline = study.deadline ? new Date(study.deadline) : null;
+  const deadlineDate = deadline ? new Date(deadline) : null;
 
   let status = "모집중";
-  if (remainingSpots <= 0 || (deadline && deadline <= now)) {
+  if (remainingSpots <= 0 || (deadlineDate && deadlineDate < today)) {
     status = "모집완료";
   } else if (
     remainingSpots <= 1 ||
-    (deadline && (deadline - now) / (1000 * 60 * 60 * 24) <= 1)
+    (deadlineDate && (deadlineDate - today) / (1000 * 60 * 60 * 24) <= 1)
   ) {
     status = "모집마감임박";
   }
