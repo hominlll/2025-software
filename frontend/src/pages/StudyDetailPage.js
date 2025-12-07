@@ -43,7 +43,6 @@ const StudyDetailPage = ({ currentUserId, userNickname }) => {
         const res = await axios.get(`http://localhost:5000/api/studies/${id}`);
         let fetchedStudy = res.data;
 
-        // 로그인 유저가 작성자면 writer를 최신 닉네임으로 덮어쓰기
         if (currentUser && fetchedStudy.userId === currentUser.userId) {
           fetchedStudy = { ...fetchedStudy, writer: currentUser.nickname };
         }
@@ -62,7 +61,6 @@ const StudyDetailPage = ({ currentUserId, userNickname }) => {
         if (res.data.success) {
           let fetchedParticipants = res.data.participants;
 
-          // 참여자 목록에서 로그인 유저 닉네임 최신화
           if (currentUser) {
             fetchedParticipants = fetchedParticipants.map(p =>
               p.userId === currentUser.userId ? { ...p, nickname: currentUser.nickname } : p
@@ -251,7 +249,8 @@ const StudyDetailPage = ({ currentUserId, userNickname }) => {
 
       {/* 참여자 카드 */}
       <div className="bg-white p-6 rounded-2xl shadow-md">
-        {currentUser && study.userId !== currentUser.userId && (
+        {/* 참여 버튼: 작성자는 안 보이도록 수정 */}
+        {currentUser && study.writer !== currentUser.nickname && (
           <div className="mb-4">
             {!isJoined ? (
               <button
