@@ -20,6 +20,7 @@ const StudyDetailPage = ({ currentUserId, userNickname }) => {
     }
   };
 
+  // ================== 유저/스터디/참여자 정보 불러오기 ==================
   useEffect(() => {
     const token = localStorage.getItem("token");
 
@@ -85,6 +86,7 @@ const StudyDetailPage = ({ currentUserId, userNickname }) => {
     });
   }, [id, currentUser?.userId, currentUser?.nickname]);
 
+  // ================== 참여 여부 체크 ==================
   useEffect(() => {
     if (currentUser) {
       const joined = participants.some(p => p.userId === currentUser.userId);
@@ -92,6 +94,7 @@ const StudyDetailPage = ({ currentUserId, userNickname }) => {
     }
   }, [currentUser, participants]);
 
+  // ================== 참여/취소 ==================
   const handleJoin = async () => {
     if (!study || !currentUser) return;
     const now = new Date();
@@ -142,6 +145,7 @@ const StudyDetailPage = ({ currentUserId, userNickname }) => {
     }
   };
 
+  // ================== 스터디 삭제 ==================
   const handleDelete = async () => {
     if (!window.confirm("정말 삭제하시겠습니까?")) return;
     try {
@@ -157,6 +161,29 @@ const StudyDetailPage = ({ currentUserId, userNickname }) => {
     } catch (err) {
       console.error("삭제 오류:", err);
       alert("삭제 중 오류가 발생했습니다.");
+    }
+  };
+
+  // ================== 참여자 강제퇴장 ==================
+  const handleKickParticipant = async (userId) => {
+    if (!window.confirm("정말 이 참여자를 강제퇴장시키겠습니까?")) return;
+
+    try {
+      const token = localStorage.getItem("token");
+      const res = await axios.delete(
+        `http://localhost:5000/api/study/${study.id}/participant/${userId}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      if (res.data.success) {
+        setParticipants(prev => prev.filter(p => p.userId !== userId));
+        alert("참여자가 강제퇴장 되었습니다.");
+      } else {
+        alert(res.data.message);
+      }
+    } catch (err) {
+      console.error(err);
+      alert("강제퇴장 중 오류가 발생했습니다.");
     }
   };
 
@@ -236,7 +263,7 @@ const StudyDetailPage = ({ currentUserId, userNickname }) => {
                 onClick={handleJoin}
                 disabled={isFullOrDeadlinePassed}
               >
-                참여하기
+                {isFullOrDeadlinePassed ? "모집 마감" : "참여하기"}
               </button>
             ) : (
               <button
@@ -254,7 +281,19 @@ const StudyDetailPage = ({ currentUserId, userNickname }) => {
         </h2>
         <ul className="list-disc list-inside text-gray-700">
           {participants.map((p) => (
-            <li key={p.userId}>{p.nickname || p.userId}</li>
+            <li key={p.userId} className="flex items-center justify-between">
+              <span>{p.nickname || p.userId}</span>
+
+              {/* 작성자만 강제퇴장 버튼 표시, 자기 자신 제외 */}
+              {currentUser && study.writer === currentUser.nickname && p.userId !== currentUser.userId && (
+                <button
+                  className="ml-2 px-2 py-1 text-sm text-white bg-red-500 rounded hover:bg-red-400"
+                  onClick={() => handleKickParticipant(p.userId)}
+                >
+                  강제퇴장
+                </button>
+              )}
+            </li>
           ))}
         </ul>
       </div>

@@ -575,6 +575,52 @@ app.get("/api/study/:id/participants", async (req, res) => {
   }
 });
 
+/* -------------------- 스터디 참여자 강제퇴장 API -------------------- */
+app.delete("/api/study/:studyId/participant/:userId", async (req, res) => {
+  const token = req.headers.authorization?.split(" ")[1];
+  const { studyId, userId } = req.params;
+
+  if (!token) return res.status(401).json({ success: false, message: "토큰이 없습니다." });
+
+  try {
+    const decoded = jwt.verify(token, SECRET_KEY);
+    const currentUserId = decoded.userId;
+
+    // 현재 유저가 스터디 작성자인지 확인
+    const [studyRows] = await studyDB
+      .promise()
+      .query("SELECT writer FROM studies WHERE id = ?", [studyId]);
+
+    if (studyRows.length === 0) return res.status(404).json({ success: false, message: "스터디를 찾을 수 없습니다." });
+
+    const writerNickname = studyRows[0].writer;
+
+    // 작성자 닉네임 가져오기
+    const [userRows] = await db.promise().query("SELECT nickname FROM users WHERE userId = ?", [currentUserId]);
+    const currentUserNickname = userRows.length > 0 ? userRows[0].nickname : null;
+
+    if (currentUserNickname !== writerNickname) {
+      return res.status(403).json({ success: false, message: "작성자만 참여자를 강제퇴장시킬 수 있습니다." });
+    }
+
+    // 자기 자신은 강제퇴장 불가
+    if (userId === currentUserId) {
+      return res.status(400).json({ success: false, message: "자기 자신은 강제퇴장할 수 없습니다." });
+    }
+
+    // 참여자 삭제
+    await studyDB
+      .promise()
+      .query("DELETE FROM study_participants WHERE studyId = ? AND userId = ?", [studyId, userId]);
+
+    res.json({ success: true, message: "참여자가 강제퇴장 되었습니다." });
+  } catch (err) {
+    console.error("참여자 강제퇴장 오류:", err);
+    res.status(500).json({ success: false, message: "서버 오류 발생" });
+  }
+});
+/*-----------------------------------------------------------*/
+
 // 스터디 참여
 app.post("/api/study/join", async (req, res) => {
   const token = req.headers.authorization?.split(" ")[1];
