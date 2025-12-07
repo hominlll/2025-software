@@ -178,7 +178,7 @@ const StudyDetailPage = ({ currentUserId, userNickname }) => {
           ← 뒤로가기
         </button>
 
-        {currentUser && study.userId === currentUser.userId && (
+        {currentUser && study.writer === currentUser.nickname && (
           <button
             className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-300"
             onClick={handleDelete}
