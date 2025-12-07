@@ -125,6 +125,7 @@ export default function StudyCreateModal({ onClose }) {
             <input
               type="date"
               value={deadline}
+              min={new Date().toISOString().split("T")[0]} // 오늘 날짜 기준
               onChange={(e) => setDeadline(e.target.value)}
               className="mt-1 w-full rounded-md border px-3 py-2 text-sm outline-none
                 focus:border-blue-400 focus:ring-1 focus:ring-blue-100"
