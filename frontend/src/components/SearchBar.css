@@ -26,7 +26,7 @@
   height: 50px;
   border: none;
   border-radius: 40px;
-  background-color: #27ae60;
+  background-color: #2fcf72;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -42,5 +42,5 @@
 }
 
 .search-button:hover {
-  background-color: #219150;
+  background-color: #28b764;
 }

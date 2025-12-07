@@ -23,6 +23,7 @@ CREATE TABLE mentor_info (
     description TEXT,
     FOREIGN KEY (userId) REFERENCES users(userId)
 );
+<<<<<<< HEAD
 -- 스터디 테이블
 CREATE TABLE study_info (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -31,6 +32,9 @@ CREATE TABLE study_info (
     status ENUM('참여 중', '완료') DEFAULT '참여 중',
     FOREIGN KEY (userId) REFERENCES users(userId)
 );
+=======
+
+>>>>>>> origin/dev
 -- 커뮤니티 게시글 테이블
 CREATE TABLE community_info (
     id INT AUTO_INCREMENT PRIMARY KEY,

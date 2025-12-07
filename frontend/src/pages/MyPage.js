@@ -1,221 +1,235 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import "./MyPage.css";
 
-const MyPage = () => {
+const MyPage = ({ userNickname, setUserNickname, currentUserId }) => {
+  const navigate = useNavigate();
   const [userInfo, setUserInfo] = useState(null);
   const [loading, setLoading] = useState(true);
   const [activeSection, setActiveSection] = useState("info");
   const [editData, setEditData] = useState({ name: "", nickname: "", email: "" });
   const [passwordData, setPasswordData] = useState({ oldPassword: "", newPassword: "" });
+  const [myStudies, setMyStudies] = useState([]);
+  const [joinedStudies, setJoinedStudies] = useState([]);
 
-  const user = JSON.parse(localStorage.getItem("user"));
   const token = localStorage.getItem("token");
 
-  // ✅ 사용자 정보 불러오기 (처음 한 번만 실행)
   useEffect(() => {
-    if (!user || !token) {
+    if (!token) {
       alert("로그인이 필요합니다.");
       setLoading(false);
       return;
     }
 
-    axios
-      .post(
-        "http://localhost:5000/api/user-info",
-        { userId: user.userId },
-        { headers: { Authorization: `Bearer ${token}` } }
-      )
-      .then((res) => {
-        setUserInfo(res.data);
-        setEditData({
-          name: res.data.name || "",
-          nickname: res.data.nickname || "",
-          email: res.data.email || "",
-        });
+    axios.post("http://localhost:5000/api/user-info", {}, { headers: { Authorization: `Bearer ${token}` } })
+      .then(res => {
+        if (res.data.success) {
+          const u = res.data.user;
+          setUserInfo(u);
+          setEditData({ name: u.name || "", nickname: u.nickname || "", email: u.email || "" });
+        } else {
+          alert("사용자 정보를 불러오지 못했습니다.");
+        }
       })
-      .catch((err) => {
-        console.error("❌ 사용자 정보 불러오기 실패:", err.response || err);
-        alert("사용자 정보를 불러오지 못했습니다.");
-      })
-      .finally(() => setLoading(false));
-  }, []); // ✅ 의존성 없음 → 최초 1회만 실행
+      .catch(() => alert("사용자 정보를 불러오지 못했습니다."));
 
-  // ✅ 정보 수정 (버튼 클릭 시 실행)
+    axios.get("http://localhost:5000/api/user-studies", { headers: { Authorization: `Bearer ${token}` } })
+      .then(res => {
+        if (res.data.success) {
+          setMyStudies(res.data.myStudies || []);
+          setJoinedStudies(res.data.joinedStudies || []);
+        }
+      })
+      .catch(() => { setMyStudies([]); setJoinedStudies([]); })
+      .finally(() => setLoading(false));
+  }, []);
+
   const handleUpdate = () => {
     if (!userInfo) return;
-    axios
-      .put(
-        "http://localhost:5000/api/update-user",
-        { ...editData, userId: userInfo.userId },
-        { headers: { Authorization: `Bearer ${token}` } }
-      )
-      .then((res) => {
-        alert("✅ 정보가 성공적으로 수정되었습니다!");
-        // 수정 후 새 데이터 반영
-        setUserInfo((prev) => ({
-          ...prev,
-          name: editData.name,
-          nickname: editData.nickname,
-          email: editData.email,
-        }));
+    axios.put("http://localhost:5000/api/update-user", { ...editData, userId: userInfo.userId }, { headers: { Authorization: `Bearer ${token}` } })
+      .then(res => {
+        if (res.data.success) {
+          alert("정보가 성공적으로 수정되었습니다!");
+          setUserInfo(prev => ({ ...prev, ...editData }));
+          if (userInfo.userId === currentUserId) setUserNickname(editData.nickname);
+        } else {
+          alert("정보 수정 실패");
+        }
       })
-      .catch((err) => {
-        console.error("❌ 정보 수정 실패:", err);
-        alert("정보 수정 실패");
-      });
+      .catch(() => alert("정보 수정 실패"));
   };
 
-  // ✅ 비밀번호 변경
   const handlePasswordChange = () => {
-    axios
-      .put(
-        "http://localhost:5000/api/change-password",
-        { ...passwordData, userId: user.userId },
-        { headers: { Authorization: `Bearer ${token}` } }
-      )
-      .then((res) => alert(res.data.message))
+    axios.put("http://localhost:5000/api/change-password", { ...passwordData, userId: userInfo.userId }, { headers: { Authorization: `Bearer ${token}` } })
+      .then(res => alert(res.data.message))
       .catch(() => alert("비밀번호 변경 실패"));
   };
 
-  // ✅ 회원 탈퇴
   const handleDelete = () => {
     if (!window.confirm("정말 탈퇴하시겠습니까? 이 작업은 되돌릴 수 없습니다.")) return;
-
-    axios
-      .delete("http://localhost:5000/api/delete-user", {
-        headers: { Authorization: `Bearer ${token}` },
-        data: { userId: user.userId },
-      })
-      .then((res) => {
+    axios.delete("http://localhost:5000/api/delete-user", { headers: { Authorization: `Bearer ${token}` }, data: { userId: userInfo.userId } })
+      .then(res => {
         alert(res.data.message);
-        // ✅ 탈퇴 시에만 로그아웃 및 이동
         localStorage.clear();
         window.location.replace("/");
       })
       .catch(() => alert("회원 탈퇴 실패"));
   };
 
-  if (loading) return <p>불러오는 중...</p>;
-  if (!userInfo) return <p>사용자 정보를 불러오지 못했습니다.</p>;
+  const handleDeleteStudy = (studyId) => {
+    if (!window.confirm("이 스터디를 삭제하시겠습니까?")) return;
+    axios.delete(`http://localhost:5000/api/studies/${studyId}`, { headers: { Authorization: `Bearer ${token}` } })
+      .then(res => {
+        if (res.data.success) {
+          alert("스터디가 삭제되었습니다.");
+          setMyStudies(prev => prev.filter(s => s.id !== studyId));
+        } else {
+          alert("삭제 실패");
+        }
+      })
+      .catch(() => alert("삭제 실패"));
+  };
+
+  const handleCancelParticipation = (studyId) => {
+    if (!window.confirm("참여를 취소하시겠습니까?")) return;
+    axios.post("http://localhost:5000/api/study/cancel", { studyId }, { headers: { Authorization: `Bearer ${token}` } })
+      .then(res => {
+        if (res.data.success) {
+          alert("참여가 취소되었습니다.");
+          setJoinedStudies(prev => prev.filter(s => s.id !== studyId));
+        } else {
+          alert("참여 취소 실패");
+        }
+      })
+      .catch(() => alert("참여 취소 실패"));
+  };
+
+  if (loading) return <p className="text-center mt-20">불러오는 중...</p>;
+  if (!userInfo) return <p className="text-center mt-20">사용자 정보를 불러오지 못했습니다.</p>;
 
   return (
-    <div className="mypage-container">
-      {/* ✅ 사이드바 */}
-      <div className="mypage-sidebar">
-        <button
-          className={activeSection === "info" ? "active" : ""}
-          onClick={() => setActiveSection("info")}
-        >
-          내 정보
-        </button>
-        <button
-          className={activeSection === "edit" ? "active" : ""}
-          onClick={() => setActiveSection("edit")}
-        >
-          정보 수정
-        </button>
-        <button
-          className={activeSection === "password" ? "active" : ""}
-          onClick={() => setActiveSection("password")}
-        >
-          비밀번호 변경
-        </button>
-        <button
-          className={activeSection === "delete" ? "active" : ""}
-          onClick={() => setActiveSection("delete")}
-        >
-          회원 탈퇴
-        </button>
+    <div className="flex flex-col lg:flex-row min-h-screen font-sans bg-gray-100 text-gray-800">
+      {/* 사이드바 */}
+      <div className="w-full lg:w-72 bg-white flex flex-col justify-between p-4 border-r border-gray-200 shadow-sm">
+        <div className="flex flex-col gap-3">
+          <button onClick={() => navigate(-1)} className="px-4 py-2 bg-green-500 text-white rounded-lg font-semibold hover:bg-green-600 transition-colors">
+            ← 뒤로가기
+          </button>
+
+          {["info", "edit", "password", "studies"].map(section => {
+            const labels = { info: "내 정보", edit: "정보 수정", password: "비밀번호 변경", studies: "스터디 관리" };
+            return (
+              <button
+                key={section}
+                onClick={() => setActiveSection(section)}
+                className={`px-4 py-3 rounded-xl font-semibold transition-all ${activeSection === section ? "bg-green-100 border-2 border-green-500 text-green-700 shadow-md" : "bg-white border border-gray-300 text-gray-800 hover:bg-green-50 hover:border-green-400 hover:text-green-600"}`}
+              >
+                {labels[section]}
+              </button>
+            );
+          })}
+
+          <button onClick={() => setActiveSection("delete")} className="px-4 py-3 bg-red-500 text-white rounded-xl font-semibold hover:bg-red-600 transition-colors mt-2">
+            회원 탈퇴
+          </button>
+        </div>
       </div>
 
-      {/* ✅ 콘텐츠 */}
-      <div className="mypage-content">
-        {activeSection === "info" && (
-          <section>
-            <h2>내 정보</h2>
-            <div className="info-item"><label>아이디</label><p>{userInfo.userId}</p></div>
-            <div className="info-item"><label>이름</label><p>{userInfo.name}</p></div>
-            <div className="info-item"><label>닉네임</label><p>{userInfo.nickname}</p></div>
-            <div className="info-item"><label>이메일</label><p>{userInfo.email}</p></div>
-            <div className="info-item"><label>가입일</label><p>{new Date(userInfo.join_date).toLocaleDateString()}</p></div>
-          </section>
-        )}
+      {/* 콘텐츠 */}
+      <div className="flex-1 lg:w-3/5 p-8">
+        <div className="flex flex-col gap-6">
+          {activeSection === "info" && (
+            <SectionCard title="내 정보">
+              <InfoRow label="아이디" value={userInfo.userId} />
+              <InfoRow label="이름" value={userInfo.name} />
+              <InfoRow label="닉네임" value={userInfo.nickname} />
+              <InfoRow label="이메일" value={userInfo.email} />
+              <InfoRow label="가입일" value={new Date(userInfo.join_date).toLocaleDateString()} />
+            </SectionCard>
+          )}
 
-        {activeSection === "edit" && (
-          <section>
-            <h2>정보 수정</h2>
-            <div className="info-item">
-              <label>이름</label>
-              <input
-                type="text"
-                value={editData.name}
-                onChange={(e) => setEditData({ ...editData, name: e.target.value })}
-              />
-            </div>
-            <div className="info-item">
-              <label>닉네임</label>
-              <input
-                type="text"
-                value={editData.nickname}
-                onChange={(e) => setEditData({ ...editData, nickname: e.target.value })}
-              />
-            </div>
-            <div className="info-item">
-              <label>이메일</label>
-              <input
-                type="email"
-                value={editData.email}
-                onChange={(e) => setEditData({ ...editData, email: e.target.value })}
-              />
-            </div>
-            <div className="btn-group">
-              <button onClick={handleUpdate} style={{ backgroundColor: "#4caf50", color: "#fff" }}>
-                저장
-              </button>
-            </div>
-          </section>
-        )}
+          {activeSection === "edit" && (
+            <SectionCard title="정보 수정">
+              <EditRow label="이름" value={editData.name} onChange={v => setEditData({ ...editData, name: v })} />
+              <EditRow label="닉네임" value={editData.nickname} onChange={v => setEditData({ ...editData, nickname: v })} />
+              <EditRow label="이메일" value={editData.email} onChange={v => setEditData({ ...editData, email: v })} />
+              <button onClick={handleUpdate} className="mt-4 px-5 py-2 bg-green-500 text-white rounded-lg font-semibold hover:bg-green-600">저장</button>
+            </SectionCard>
+          )}
 
-        {activeSection === "password" && (
-          <section>
-            <h2>비밀번호 변경</h2>
-            <div className="info-item">
-              <label>현재 비밀번호</label>
-              <input
-                type="password"
-                value={passwordData.oldPassword}
-                onChange={(e) => setPasswordData({ ...passwordData, oldPassword: e.target.value })}
-              />
-            </div>
-            <div className="info-item">
-              <label>새 비밀번호</label>
-              <input
-                type="password"
-                value={passwordData.newPassword}
-                onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
-              />
-            </div>
-            <div className="btn-group">
-              <button onClick={handlePasswordChange}>변경</button>
-            </div>
-          </section>
-        )}
+          {activeSection === "password" && (
+            <SectionCard title="비밀번호 변경">
+              <EditRow label="현재 비밀번호" value={passwordData.oldPassword} onChange={v => setPasswordData({ ...passwordData, oldPassword: v })} type="password" />
+              <EditRow label="새 비밀번호" value={passwordData.newPassword} onChange={v => setPasswordData({ ...passwordData, newPassword: v })} type="password" />
+              <button onClick={handlePasswordChange} className="mt-4 px-5 py-2 bg-green-500 text-white rounded-lg font-semibold hover:bg-green-600">변경</button>
+            </SectionCard>
+          )}
 
-        {activeSection === "delete" && (
-          <section>
-            <h2>회원 탈퇴</h2>
-            <p>정말로 탈퇴하시겠습니까? 이 작업은 되돌릴 수 없습니다.</p>
-            <div className="btn-group">
-              <button className="delete-btn" onClick={handleDelete}>
-                탈퇴하기
-              </button>
-            </div>
-          </section>
-        )}
+          {activeSection === "studies" && (
+            <SectionCard title="내 스터디 관리">
+              <p className="text-lg font-semibold mb-2">내가 만든 스터디</p>
+              {myStudies.length === 0 && <p>등록된 스터디가 없습니다.</p>}
+              {myStudies.map(s => (
+                <div key={s.id} className="flex justify-between items-center p-4 border rounded-lg mb-3">
+                  <div>
+                    <p className="font-semibold">{s.studyName}</p>
+                    <p className="text-sm text-gray-500">참여: {s.participantCount} / {s.maxPeople}</p>
+                  </div>
+                  <div className="flex gap-2">
+                    <button onClick={() => navigate(`/study/${s.id}`)} className="px-3 py-1 bg-blue-500 text-white rounded-md hover:bg-blue-600 text-sm">상세보기</button>
+                    <button onClick={() => handleDeleteStudy(s.id)} className="px-3 py-1 bg-red-500 text-white rounded-md hover:bg-red-600 text-sm">삭제</button>
+                  </div>
+                </div>
+              ))}
+
+              <p className="text-lg font-semibold mb-2 mt-6">참여중인 스터디</p>
+              {joinedStudies.length === 0 && <p>참여중인 스터디가 없습니다.</p>}
+              {joinedStudies.map(s => (
+                <div key={s.id} className="flex justify-between items-center p-4 border rounded-lg mb-3">
+                  <div>
+                    <p className="font-semibold">{s.studyName}</p>
+                    <p className="text-sm text-gray-500">참여: {s.participantCount} / {s.maxPeople}</p>
+                  </div>
+                  <div className="flex gap-2">
+                    <button onClick={() => navigate(`/study/${s.id}`)} className="px-3 py-1 bg-blue-500 text-white rounded-md hover:bg-blue-600 text-sm">상세보기</button>
+                    <button onClick={() => handleCancelParticipation(s.id)} className="px-3 py-1 bg-orange-500 text-white rounded-md hover:bg-orange-600 text-sm">참여 취소</button>
+                  </div>
+                </div>
+              ))}
+            </SectionCard>
+          )}
+
+          {activeSection === "delete" && (
+            <SectionCard title="회원 탈퇴">
+              <p className="mb-4">정말로 탈퇴하시겠습니까? 이 작업은 되돌릴 수 없습니다.</p>
+              <button onClick={handleDelete} className="px-5 py-2 bg-red-500 text-white rounded-lg font-semibold hover:bg-red-600">탈퇴하기</button>
+            </SectionCard>
+          )}
+        </div>
       </div>
     </div>
   );
 };
+
+const SectionCard = ({ title, children }) => (
+  <div className="bg-white p-6 rounded-xl shadow-lg">
+    <h2 className="text-2xl font-bold border-b pb-3 mb-6">{title}</h2>
+    {children}
+  </div>
+);
+
+const InfoRow = ({ label, value }) => (
+  <div className="mb-4">
+    <label className="block font-semibold mb-1">{label}</label>
+    <p className="bg-gray-50 p-2 rounded-md border border-gray-200">{value}</p>
+  </div>
+);
+
+const EditRow = ({ label, value, onChange, type = "text" }) => (
+  <div className="mb-4">
+    <label className="block font-semibold mb-1">{label}</label>
+    <input type={type} value={value} onChange={e => onChange(e.target.value)} className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-300" />
+  </div>
+);
 
 export default MyPage;

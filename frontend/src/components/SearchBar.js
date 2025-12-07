@@ -1,16 +1,13 @@
-import React, { useState } from 'react';
-import './SearchBar.css'; // 스타일 분리
+import React, { useState } from "react";
+import "./SearchBar.css";
 
-const SearchBar = ({ placeholder = "검색어를 입력하세요..." }) => {
+const SearchBar = ({ placeholder = "검색어를 입력하세요...", onSearch }) => {
   const [text, setText] = useState("");
 
   const handleSearch = () => {
-    if (!text.trim()) {
-      alert("검색어를 입력해주세요.");
-      return;
-    }
-    alert(`검색: ${text}`);
-    // 실제 검색 API 호출 로직 추가 가능
+    const keyword = text.trim();
+    if (!keyword) return;
+    if (onSearch) onSearch(keyword); // 🔹 버튼 클릭/Enter 시 검색어 전달
   };
 
   return (
@@ -19,8 +16,9 @@ const SearchBar = ({ placeholder = "검색어를 입력하세요..." }) => {
         type="text"
         className="search-input"
         value={text}
-        onChange={(e) => setText(e.target.value)}
+        onChange={(e) => setText(e.target.value)} // 입력만 저장
         placeholder={placeholder}
+        onKeyDown={(e) => e.key === "Enter" && handleSearch()} // Enter로 검색
       />
       <button className="search-button" onClick={handleSearch}>
         <img src="/img/search.svg" alt="검색" />
