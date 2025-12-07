@@ -471,11 +471,12 @@ app.post("/api/studies", (req, res) => {
     method,
     duration,
     maxPeople,
-    description
+    description,
+    contactLink
   } = req.body;
 
   const sql =
-    "INSERT INTO studies (studyName, writer, category, deadline, method, duration, maxPeople, description) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+    "INSERT INTO studies (studyName, writer, category, deadline, method, duration, maxPeople, description, contactLink) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
   studyDB.query(
     sql,
@@ -487,7 +488,8 @@ app.post("/api/studies", (req, res) => {
       method,
       duration,
       maxPeople,
-      description
+      description,
+      contactLink
     ],
     (err, result) => {
       if (err) {
@@ -702,7 +704,6 @@ app.post("/api/studies/:id/views", async (req, res) => {
     res.status(500).json({ success: false, message: "서버 오류 발생" });
   }
 });
-
 
 /* -------------------- 커뮤니티 게시글 / 댓글 API -------------------- */
 

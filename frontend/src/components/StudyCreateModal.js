@@ -7,21 +7,25 @@ const categories = [
   '화학', '생명', '면접'
 ];
 
-export default function StudyCreateModal({ onClose }) {
+export default function StudyCreateModal({ onClose, userNickname }) {
   const [studyName, setStudyName] = useState("");
-  const [writer, setWriter] = useState(""); // 작성자 상태
+  const [writer, setWriter] = useState(""); // 최신화된 작성자
   const [category, setCategory] = useState("");
   const [deadline, setDeadline] = useState("");
   const [method, setMethod] = useState("");
   const [duration, setDuration] = useState("");
   const [maxPeople, setMaxPeople] = useState("");
   const [description, setDescription] = useState("");
+  const [contactLink, setcontactLink] = useState("");
 
-  // 로그인 유저 정보 가져오기 (디테일페이지처럼 최신화)
+  // 로그인 유저 정보 최신화
   useEffect(() => {
     const fetchCurrentUser = async () => {
       const token = localStorage.getItem("token");
-      if (!token) return;
+      if (!token) {
+        setWriter(userNickname || "");
+        return;
+      }
 
       try {
         const res = await axios.post(
@@ -30,15 +34,18 @@ export default function StudyCreateModal({ onClose }) {
           { headers: { Authorization: `Bearer ${token}` } }
         );
         if (res.data.success) {
-          setWriter(res.data.user.nickname || "");
+          setWriter(res.data.user.nickname || userNickname || "");
+        } else {
+          setWriter(userNickname || "");
         }
       } catch (err) {
         console.error("유저 정보 불러오기 오류:", err);
+        setWriter(userNickname || "");
       }
     };
 
     fetchCurrentUser();
-  }, []);
+  }, [userNickname]);
 
   const handleSubmit = async () => {
     if (!studyName || !category || !deadline || !method || !duration || !maxPeople || !description) {
@@ -54,14 +61,15 @@ export default function StudyCreateModal({ onClose }) {
       method,
       duration,
       maxPeople: Number(maxPeople),
-      description
+      description,
+      contactLink
     };
 
     try {
       const res = await axios.post("http://localhost:5000/api/studies", newStudy);
       if (res.data.success) {
         alert("스터디 등록 성공!");
-        onClose(true); // 상위 컴포넌트에서 새로고침 없이 카드 반영
+        onClose(true);
       } else {
         alert("스터디 등록 실패: " + res.data.message);
       }
@@ -73,7 +81,7 @@ export default function StudyCreateModal({ onClose }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-      <div className="w-[500px] rounded-2xl bg-white p-6 shadow-2xl overflow-y-auto max-h-[90vh]">
+      <div className="w-[800px] rounded-2xl bg-white p-6 shadow-2xl overflow-y-auto max-h-[90vh]">
         <div className="mb-4 flex items-center justify-between">
           <h2 className="text-xl font-bold text-gray-900">스터디 모집글 작성</h2>
         </div>
@@ -103,7 +111,7 @@ export default function StudyCreateModal({ onClose }) {
             />
           </div>
 
-          {/* 모집 분야 */}
+          {/* 분야 */}
           <div>
             <label className="text-sm font-medium text-gray-700">모집 분야</label>
             <select
@@ -125,7 +133,7 @@ export default function StudyCreateModal({ onClose }) {
             <input
               type="date"
               value={deadline}
-              min={new Date().toISOString().split("T")[0]} // 오늘 날짜 기준
+              min={new Date().toISOString().split("T")[0]} // 오늘 날짜부터 선택 가능
               onChange={(e) => setDeadline(e.target.value)}
               className="mt-1 w-full rounded-md border px-3 py-2 text-sm outline-none
                 focus:border-blue-400 focus:ring-1 focus:ring-blue-100"
@@ -185,6 +193,19 @@ export default function StudyCreateModal({ onClose }) {
               className="mt-1 w-full rounded-md border px-3 py-2 text-sm outline-none resize-none
                 focus:border-blue-400 focus:ring-1 focus:ring-blue-100"
               placeholder="스터디에 대한 자세한 소개를 작성해주세요."
+            />
+          </div>
+
+          {/* 문의 링크 */}
+          <div>
+            <label className="text-sm font-medium text-gray-700">문의 링크</label>
+            <input
+              type="text"
+              placeholder="예: https://open.kakao.com/..."
+              value={contactLink}
+              onChange={(e) => setcontactLink(e.target.value)}
+              className="mt-1 w-full rounded-md border px-3 py-2 text-sm outline-none
+                focus:border-blue-400 focus:ring-1 focus:ring-blue-100"
             />
           </div>
         </div>

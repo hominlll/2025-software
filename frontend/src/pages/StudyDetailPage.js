@@ -242,6 +242,22 @@ const StudyDetailPage = ({ currentUserId, userNickname }) => {
 
           <div className="font-medium">모집 인원</div>
           <div>{study.maxPeople}명</div>
+
+          {/* 🔥 문의 링크 — 작성자 또는 참여자만 표시 */}
+          {study.contactLink &&
+            currentUser &&
+            (study.writer === currentUser.nickname || isJoined) && (
+              <div className="col-span-2 mt-2 p-3 bg-blue-50 rounded text-blue-600">
+                연락 및 문의 :{" "}
+                <a
+                  href={study.contactLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  {study.contactLink}
+                </a>
+              </div>
+            )}
         </div>
 
         <h2 className="text-lg font-semibold border-b border-gray-300 pb-1 mb-2">

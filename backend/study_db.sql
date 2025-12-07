@@ -13,7 +13,8 @@ CREATE TABLE IF NOT EXISTS studies (
     maxPeople INT NOT NULL,
     description TEXT NOT NULL,
     createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    views INT NOT NULL DEFAULT 0
+    views INT NOT NULL DEFAULT 0,
+    contactLink VARCHAR(255) NULL
 );
 /* 스터디 참여자 저장 테이블 */
 CREATE TABLE IF NOT EXISTS study_participants (
