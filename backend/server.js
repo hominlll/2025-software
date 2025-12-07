@@ -18,7 +18,7 @@ app.use(bodyParser.json());
 const db = mysql.createConnection({
   host: "localhost",
   user: "root",
-  password: "charming0218",
+  password: "test1234",
   database: "login_db",
 });
 
@@ -34,7 +34,7 @@ db.connect((err) => {
 const mentoringDB = mysql.createConnection({
   host: "localhost",
   user: "root",
-  password: "charming0218",
+  password: "test1234",
   database: "mentoring",
 });
 
@@ -47,7 +47,7 @@ mentoringDB.connect((err) => {
 const studyDB = mysql.createConnection({
   host: "localhost",
   user: "root",
-  password: "charming0218",
+  password: "test1234",
   database: "study_db",
 });
 
