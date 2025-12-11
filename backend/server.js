@@ -319,7 +319,26 @@ app.delete("/api/delete-user", async (req, res) => {
 
 /* 멘토 목록 (경로 통일: /api/mentors) */
 app.get("/api/mentors", (req, res) => {
-  mentoringDB.query("SELECT * FROM mentors", (err, results) => {
+  const search = req.query.search || "";     // 검색어
+  const category = req.query.category || ""; // 카테고리(전체일 경우 공백)
+
+  let sql = "SELECT * FROM mentors WHERE 1=1";
+  let params = [];
+
+  // 카테고리 필터
+  if (category && category !== "전체") {
+    sql += " AND category = ?";
+    params.push(category);
+  }
+
+  // 검색어 필터 (name, title, description에 동시 적용)
+  if (search.trim() !== "") {
+    sql += " AND (name LIKE ? OR position LIKE ? OR company LIKE ? OR description LIKE ?)";
+    const keyword = `%${search}%`;
+    params.push(keyword, keyword, keyword, keyword);
+  }
+
+  mentoringDB.query(sql, params, (err, results) => {
     if (err) {
       console.error("DB error:", err);
       return res.status(500).send(err);
@@ -327,6 +346,7 @@ app.get("/api/mentors", (req, res) => {
     res.json(results);
   });
 });
+
 
 /* 멘토 상세 조회 */
 app.get("/api/mentor/:id", (req, res) => {

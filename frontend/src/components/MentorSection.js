@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import MentorCard from "./MentorCard";
 
-const MentorSection = ({ selectedCategory }) => {
+const MentorSection = ({ selectedCategory, searchText }) => {
   const [mentors, setMentors] = useState([]);
   const [filtered, setFiltered] = useState([]);
 
@@ -17,16 +17,29 @@ const MentorSection = ({ selectedCategory }) => {
       .catch((err) => console.error("멘토 데이터 불러오기 실패:", err));
   }, []);
 
-  // 카테고리 변경 시 필터링
+  // 카테고리 + 검색 필터링
   useEffect(() => {
-    const category = selectedCategory?.trim();  // 공백 제거
+    let result = [...mentors];
 
-    if (!category || category === "전체") {
-      setFiltered(mentors); // 전체 출력 확정
-    } else {
-      setFiltered(mentors.filter((m) => m.category === category));
+    // 1) 카테고리 필터
+    const category = selectedCategory?.trim();
+    if (category && category !== "전체") {
+      result = result.filter((m) => m.category === category);
     }
-  }, [selectedCategory, mentors]);
+
+    // 2) 검색 필터 (이름 / 제목 / 내용 등 원하는 필드)
+    if (searchText && searchText.trim() !== "") {
+      const q = searchText.trim().toLowerCase();
+      result = result.filter(
+        (m) =>
+          m.name?.toLowerCase().includes(q) ||
+          m.title?.toLowerCase().includes(q) ||
+          m.description?.toLowerCase().includes(q)
+      );
+    }
+
+    setFiltered(result);
+  }, [selectedCategory, searchText, mentors]);
 
   return (
     <div className="px-10 py-8 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
