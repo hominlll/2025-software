@@ -1,3 +1,4 @@
+// App.js
 import React, { useState } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import Header from "./components/Header";
@@ -26,20 +27,21 @@ function App() {
 
   return (
     <Router>
+      <Header
+        isLoggedIn={isLoggedIn}
+        setIsLoggedIn={setIsLoggedIn}
+        selectedTab={selectedTab}
+        setSelectedTab={setSelectedTab}
+        setUserNickname={setUserNickname}
+        setCurrentUserId={setCurrentUserId}
+      />
+
       <Routes>
+        {/* 홈 페이지 */}
         <Route
           path="/"
           element={
             <>
-              <Header
-                isLoggedIn={isLoggedIn}
-                setIsLoggedIn={setIsLoggedIn}
-                selectedTab={selectedTab}
-                setSelectedTab={setSelectedTab}
-                setUserNickname={setUserNickname}
-                setCurrentUserId={setCurrentUserId}
-              />
-
               {(selectedTab === "study" || selectedTab === "mentoring") && (
                 <SearchBar
                   placeholder={selectedTab === "study" ? "스터디 검색..." : "멘토링 검색..."}
@@ -52,7 +54,6 @@ function App() {
               {selectedTab === "study" && (
                 <>
                   <StudyBanner userNickname={userNickname} setRefresh={setRefresh} />
-
                   <div className="w-[70%] mx-auto flex gap-2 mb-6 justify-start">
                     {["모집중", "마감임박", "모집마감"].map((status) => {
                       let bgColor = "";
@@ -113,62 +114,41 @@ function App() {
           }
         />
 
-        <Route
-          path="/study/:id"
-          element={
-            <>
-              <Header
-                isLoggedIn={isLoggedIn}
-                setIsLoggedIn={setIsLoggedIn}
-                selectedTab={selectedTab}
-                setSelectedTab={setSelectedTab}
-                setUserNickname={setUserNickname}
-                setCurrentUserId={setCurrentUserId}
-              />
-              <StudyDetailPage />
-            </>
-          }
-        />
-
+        {/* 상세 페이지 */}
+        <Route path="/study/:id" element={<StudyDetailPage />} />
         <Route path="/mentor/:id" element={<MentorDetailPage />} />
+
+        {/* 커뮤니티 */}
         <Route
           path="/community"
           element={
-            <>
-              <Header
-                isLoggedIn={isLoggedIn}
-                setIsLoggedIn={setIsLoggedIn}
-                selectedTab={selectedTab}
-                setSelectedTab={setSelectedTab}
-                setUserNickname={setUserNickname}
-                setCurrentUserId={setCurrentUserId}
-              />
-              <Community />
-            </>
+            <Community
+              isLoggedIn={isLoggedIn}
+              currentUserId={currentUserId}
+              userNickname={userNickname}
+            />
           }
         />
-        
         <Route
           path="/community/:id"
           element={
-            <>
-              <Header
-                isLoggedIn={isLoggedIn}
-                setIsLoggedIn={setIsLoggedIn}
-                selectedTab={selectedTab}
-                setSelectedTab={setSelectedTab}
-                setUserNickname={setUserNickname}
-                setCurrentUserId={setCurrentUserId}
-              />
-              <PostDetail />
-            </>
+            <PostDetail
+              isLoggedIn={isLoggedIn}
+              currentUserId={currentUserId}
+              userNickname={userNickname}
+            />
           }
         />
-        <Route path="/community/:id" element={<PostDetail />} />
+
+        {/* 마이페이지 접근 제한 */}
         <Route
           path="/mypage"
           element={isLoggedIn ? (
-            <MyPage userNickname={userNickname} setUserNickname={setUserNickname} currentUserId={currentUserId} />
+            <MyPage
+              userNickname={userNickname}
+              setUserNickname={setUserNickname}
+              currentUserId={currentUserId}
+            />
           ) : (
             <Navigate to="/" replace />
           )}

@@ -6,7 +6,7 @@ import PostList from "../components/PostList";
 import PostModal from "../components/PostModal";
 import PostDetail from "../components/PostDetail";
 
-export default function Community() {
+export default function Community({ currentUserId, userNickname, isLoggedIn }) {
   const [selectedCategory, setSelectedCategory] = useState("전체");
   const [posts, setPosts] = useState([]);
   const [openModal, setOpenModal] = useState(false);
@@ -14,16 +14,11 @@ export default function Community() {
   const [selectedPost, setSelectedPost] = useState(null);
   const [commentsByPost, setCommentsByPost] = useState({});
 
-  const currentUserId = "admin";
-
   const [inputText, setInputText] = useState("");
   const [searchKeyword, setSearchKeyword] = useState("");
 
   // ✅ 처음 로드될 때 DB에서 게시글 가져오기
   useEffect(() => {
-    // 🎯 "방법 2": community 페이지일 때만 요청
-    if (!window.location.pathname.includes("community")) return;
-
     axios
       .get("http://localhost:5000/api/community/posts")
       .then((res) => {
@@ -68,6 +63,11 @@ export default function Community() {
   };
 
   const addPost = async (postFromModal) => {
+    if (!isLoggedIn) {
+      alert("로그인 후 글을 작성할 수 있습니다.");
+      return;
+    }
+
     try {
       const body = {
         userId: currentUserId,
@@ -97,6 +97,11 @@ export default function Community() {
   };
 
   const addCommentToPost = (postId, content) => {
+    if (!isLoggedIn) {
+      alert("로그인 후 댓글을 작성할 수 있습니다.");
+      return;
+    }
+
     setCommentsByPost((prev) => {
       const prevComments = prev[postId] || [];
       const newComment = {

@@ -12,20 +12,12 @@ const Header = ({ isLoggedIn, setIsLoggedIn, selectedTab, setSelectedTab, setUse
     setIsLoggedIn(true);
     setUserNickname(nickname);
     setShowModal(false);
-
-    // ❌ navigate("/") 제거
-    // ❗ 상태만 바꿔서 컴포넌트 전환
-    setSelectedTab("community");
   };
 
   const handleLogout = () => {
     setIsLoggedIn(false);
     setUserNickname("");
     alert("로그아웃되었습니다.");
-
-    // ❌ navigate("/") 제거
-    // ❗ 상태만 초기화
-    setSelectedTab("community");
   };
 
   const handleMyPage = () => {
