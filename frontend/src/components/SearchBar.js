@@ -6,7 +6,6 @@ const SearchBar = ({ placeholder = "검색어를 입력하세요...", onSearch }
 
   const handleSearch = () => {
     const keyword = text.trim();
-    if (!keyword) return;
     if (onSearch) onSearch(keyword); // 🔹 버튼 클릭/Enter 시 검색어 전달
   };
 

@@ -50,7 +50,6 @@ export default function Community({ currentUserId, userNickname, isLoggedIn }) {
 
   const triggerSearch = () => {
     if (!inputText.trim()) {
-      alert("검색어를 입력해주세요.");
       setSearchKeyword("");
       return;
     }
