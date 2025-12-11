@@ -11,27 +11,22 @@ export default function Community() {
   const [posts, setPosts] = useState([]);
   const [openModal, setOpenModal] = useState(false);
 
-  // 클릭된 게시글
   const [selectedPost, setSelectedPost] = useState(null);
-
-  // 게시글별 댓글: { [postId]: [comment, ...] }
   const [commentsByPost, setCommentsByPost] = useState({});
 
-  // 임시 작성자 ID (나중에 로그인 유저로 교체)
   const currentUserId = "admin";
 
-  // 🔍 입력창에 보여지는 텍스트 (타이핑용)
   const [inputText, setInputText] = useState("");
-
-  // 🔍 실제 검색에 사용하는 키워드 (버튼/엔터 눌렀을 때만 업데이트)
   const [searchKeyword, setSearchKeyword] = useState("");
 
   // ✅ 처음 로드될 때 DB에서 게시글 가져오기
   useEffect(() => {
+    // 🎯 "방법 2": community 페이지일 때만 요청
+    if (!window.location.pathname.includes("community")) return;
+
     axios
       .get("http://localhost:5000/api/community/posts")
       .then((res) => {
-        // 서버 rows: { id, userId, title, category, content, created_at }
         const mapped = res.data.map((p) => ({
           ...p,
           createdAt: p.created_at,
@@ -44,15 +39,13 @@ export default function Community() {
       });
   }, []);
 
-  // 1차: 카테고리 필터
   const categoryFiltered = posts.filter((post) =>
     selectedCategory === "전체" ? true : post.category === selectedCategory
   );
 
-  // 2차: 검색어 필터 (제목 + 내용) — 여기서는 **searchKeyword**만 사용!
   const finalPosts = categoryFiltered.filter((post) => {
     const keyword = searchKeyword.trim().toLowerCase();
-    if (!keyword) return true; // 검색어 없으면 그대로 전체/카테고리만
+    if (!keyword) return true;
 
     const title = (post.title || "").toLowerCase();
     const content = (post.content || "").toLowerCase();
@@ -60,22 +53,20 @@ export default function Community() {
     return title.includes(keyword) || content.includes(keyword);
   });
 
-  // ✅ 검색 버튼 / Enter 눌렀을 때만 필터 적용
   const triggerSearch = () => {
     if (!inputText.trim()) {
       alert("검색어를 입력해주세요.");
-      setSearchKeyword(""); // 검색어 비우면 전체 다시 보여줌
+      setSearchKeyword("");
       return;
     }
-    setSearchKeyword(inputText); // 이 때만 실제 필터링이 걸림
+    setSearchKeyword(inputText);
   };
 
   const handleSearchSubmit = (e) => {
-    e.preventDefault(); // form submit 시 새로고침 방지
+    e.preventDefault();
     triggerSearch();
   };
 
-  // ✅ 글 작성 → 백엔드로 저장
   const addPost = async (postFromModal) => {
     try {
       const body = {
@@ -105,7 +96,6 @@ export default function Community() {
     }
   };
 
-  // (지금은 댓글은 프론트 메모리에만 저장)
   const addCommentToPost = (postId, content) => {
     setCommentsByPost((prev) => {
       const prevComments = prev[postId] || [];
@@ -123,7 +113,7 @@ export default function Community() {
 
   return (
     <div className="w-full max-w-5xl mx-auto mt-6 px-3">
-      {/* 🔍 검색창 */}
+      {/* 검색창 */}
       <form
         onSubmit={handleSearchSubmit}
         className="w-full flex justify-center mb-6"
@@ -133,7 +123,7 @@ export default function Community() {
             type="text"
             className="flex-1 h-full px-4 text-sm md:text-base outline-none border-none bg-transparent"
             placeholder="검색어를 입력하세요..."
-            value={inputText} // 입력은 무조건 이 state만 변경
+            value={inputText}
             onChange={(e) => setInputText(e.target.value)}
           />
           <button
@@ -159,13 +149,12 @@ export default function Community() {
 
         <div className="flex-1 -mt-6">
           <PostList
-            posts={finalPosts} // ⭐ 카테고리 + (버튼 눌러서 확정된) 검색만 적용된 리스트
+            posts={finalPosts}
             onPostClick={(post) => setSelectedPost(post)}
           />
         </div>
       </div>
 
-      {/* 글쓰기 버튼 */}
       <button
         type="button"
         onClick={() => setOpenModal(true)}
@@ -176,12 +165,10 @@ export default function Community() {
         글 작성하기 +
       </button>
 
-      {/* 글 작성 모달 */}
       {openModal && (
         <PostModal onClose={() => setOpenModal(false)} onSubmit={addPost} />
       )}
 
-      {/* 게시글 상세 + 댓글 모달 */}
       {selectedPost && (
         <PostDetail
           post={selectedPost}

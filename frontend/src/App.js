@@ -147,6 +147,23 @@ function App() {
             </>
           }
         />
+        
+        <Route
+          path="/community/:id"
+          element={
+            <>
+              <Header
+                isLoggedIn={isLoggedIn}
+                setIsLoggedIn={setIsLoggedIn}
+                selectedTab={selectedTab}
+                setSelectedTab={setSelectedTab}
+                setUserNickname={setUserNickname}
+                setCurrentUserId={setCurrentUserId}
+              />
+              <PostDetail />
+            </>
+          }
+        />
         <Route path="/community/:id" element={<PostDetail />} />
         <Route
           path="/mypage"

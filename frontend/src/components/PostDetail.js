@@ -59,7 +59,6 @@ export default function PostDetail() {
   if (!post) {
     return (
       <>
-        <Header />
         <div className="w-full max-w-4xl mx-auto mt-24 px-3">
           <p className="text-center text-gray-500 py-10">
             이 게시글 정보를 찾을 수 없습니다. (새로고침 되었거나, 주소를 직접 입력했을 수 있어요)
@@ -111,8 +110,6 @@ export default function PostDetail() {
 
   return (
     <>
-      <Header />
-
       <div className="w-full max-w-4xl mx-auto mt-12 mb-12 px-3">
         <div className="bg-white rounded-xl shadow-md overflow-hidden border">
           {/* 상단: 글 정보 */}

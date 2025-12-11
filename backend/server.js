@@ -56,7 +56,7 @@ app.post("/api/upload", upload.single("image"), (req, res) => {
 const db = mysql.createConnection({
   host: "localhost",
   user: "root",
-  password: "test1234",
+  password: "hm09080908",
   database: "login_db",
 });
 
@@ -68,7 +68,7 @@ db.connect((err) => {
 const mentoringDB = mysql.createConnection({
   host: "localhost",
   user: "root",
-  password: "test1234",
+  password: "hm09080908",
   database: "mentoring",
 });
 
@@ -80,7 +80,7 @@ mentoringDB.connect((err) => {
 const studyDB = mysql.createConnection({
   host: "127.0.0.1",
   user: "root",
-  password: "test1234",
+  password: "hm09080908",
   database: "study_db",
   port: 3306,
 });
