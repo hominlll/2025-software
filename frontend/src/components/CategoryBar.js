@@ -14,7 +14,7 @@ export default function CategoryBar({ selected, setSelected }) {
           key={cat}
           type="button"
           onClick={() => setSelected(cat.trim())}
-          className={`community-category-btn w-full text-left px-3 py-1.5
+          className={`community-category-btn w-full text-left px-5 py-2.5
                       text-sm rounded-md border transition 
             ${selected === cat
               ? "bg-green-600 text-white border-green-600"

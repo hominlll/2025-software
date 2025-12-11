@@ -150,7 +150,7 @@ export default function Community() {
       </form>
 
       <div className="flex gap-8 items-start">
-        <div className="w-32 shrink-0 -mt-[60px]">
+        <div className="w-32 shrink-0">
           <CategoryBar
             selected={selectedCategory}
             setSelected={setSelectedCategory}
