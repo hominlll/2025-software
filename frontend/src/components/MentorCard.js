@@ -30,11 +30,8 @@ const MentorCard = ({ mentor }) => {
       </p>
 
       <div className="flex flex-wrap gap-1 mt-3">
-        {mentor.tags.split(',').map(tag => (
-          <span
-            key={tag}
-            className="text-xs bg-gray-100 px-2 py-1 rounded-full text-gray-700"
-          >
+        {(mentor.tags || "").split(",").map((tag) => (
+          <span key={tag} className="text-xs bg-gray-100 px-2 py-1 rounded-full text-gray-700">
             #{tag}
           </span>
         ))}

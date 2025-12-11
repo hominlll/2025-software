@@ -15,14 +15,6 @@ CREATE TABLE users (
     -- ★ role 칼럼을 여기 포함
     join_date DATETIME DEFAULT CURRENT_TIMESTAMP
 );
--- 멘토 테이블
-CREATE TABLE mentor_info (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    userId VARCHAR(50) NOT NULL,
-    field VARCHAR(100),
-    description TEXT,
-    FOREIGN KEY (userId) REFERENCES users(userId)
-);
 -- 커뮤니티 게시글 테이블
 CREATE TABLE community_info (
     id INT AUTO_INCREMENT PRIMARY KEY,

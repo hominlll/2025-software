@@ -7,14 +7,13 @@ import jwt from "jsonwebtoken";
 import bodyParser from "body-parser";
 
 const app = express();
-const SECRET_KEY = "your_secret_key"; // JWT 비밀키
+const SECRET_KEY = "your_secret_key";
 
 app.use(cors());
 app.use(bodyParser.json());
 
 /* -------------------- DB 연결 -------------------- */
 
-// ✅ login_db (users, community_info, community_comments 등)
 const db = mysql.createConnection({
   host: "localhost",
   user: "root",
@@ -23,14 +22,10 @@ const db = mysql.createConnection({
 });
 
 db.connect((err) => {
-  if (err) {
-    console.error("❌ login_db 연결 실패:", err);
-  } else {
-    console.log("✅ login_db 연결 성공");
-  }
+  if (err) console.error("❌ login_db 연결 실패:", err);
+  else console.log("✅ login_db 연결 성공");
 });
 
-// ✅ mentoring DB
 const mentoringDB = mysql.createConnection({
   host: "localhost",
   user: "root",
@@ -43,64 +38,41 @@ mentoringDB.connect((err) => {
   else console.log("✅ mentoring DB 연결 성공");
 });
 
-// ✅ study_db
 const studyDB = mysql.createConnection({
-  host: "127.0.0.1", // localhost 대신 127.0.0.1 사용
+  host: "127.0.0.1",
   user: "root",
   password: "test1234",
   database: "study_db",
-  port: 3306          // 포트 명시
+  port: 3306,
 });
 
 studyDB.connect((err) => {
-  if (err) {
-    console.error("❌ study DB 연결 실패:", err.code, "-", err.message);
-  } else {
-    console.log("✅ study_db 연결 성공");
-  }
+  if (err) console.error("❌ study DB 연결 실패:", err.code, "-", err.message);
+  else console.log("✅ study_db 연결 성공");
 });
-
 
 /* -------------------- 회원 / 인증 API -------------------- */
 
-// 회원가입
 app.post("/api/signup", async (req, res) => {
   const { userId, password, email, name, nickname } = req.body;
-
   try {
-    if (!userId || !password || !email || !name || !nickname) {
-      return res.json({
-        success: false,
-        message: "모든 필드를 입력해주세요.",
-      });
-    }
+    if (!userId || !password || !email || !name || !nickname)
+      return res.json({ success: false, message: "모든 필드를 입력해주세요." });
 
-    const [exist] = await db
-      .promise()
-      .query("SELECT * FROM users WHERE userId = ?", [userId]);
-    if (exist.length > 0) {
-      return res.json({
-        success: false,
-        message: "이미 존재하는 아이디입니다.",
-      });
-    }
+    const [exist] = await db.promise().query("SELECT * FROM users WHERE userId = ?", [userId]);
+    if (exist.length)
+      return res.json({ success: false, message: "이미 존재하는 아이디입니다." });
 
-    const [emailExist] = await db
-      .promise()
-      .query("SELECT * FROM users WHERE email = ?", [email]);
-    if (emailExist.length > 0) {
-      return res.json({
-        success: false,
-        message: "이미 가입된 이메일입니다.",
-      });
-    }
+    const [emailExist] = await db.promise().query("SELECT * FROM users WHERE email = ?", [email]);
+    if (emailExist.length)
+      return res.json({ success: false, message: "이미 가입된 이메일입니다." });
 
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const hashed = await bcrypt.hash(password, 10);
     await db
       .promise()
       .query(
         "INSERT INTO users (userId, password, email, name, nickname) VALUES (?, ?, ?, ?, ?)",
-        [userId, hashedPassword, email, name, nickname]
+        [userId, hashed, email, name, nickname]
       );
 
     res.json({ success: true, message: "회원가입 완료!" });
@@ -110,35 +82,19 @@ app.post("/api/signup", async (req, res) => {
   }
 });
 
-// 로그인
 app.post("/api/login", async (req, res) => {
   const { userId, password } = req.body;
-
   try {
-    const [rows] = await db
-      .promise()
-      .query("SELECT * FROM users WHERE userId = ?", [userId]);
-    if (rows.length === 0) {
-      return res.json({
-        success: false,
-        message: "존재하지 않는 아이디입니다.",
-      });
-    }
+    const [rows] = await db.promise().query("SELECT * FROM users WHERE userId = ?", [userId]);
+    if (!rows.length)
+      return res.json({ success: false, message: "존재하지 않는 아이디입니다." });
 
     const user = rows[0];
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-      return res.json({
-        success: false,
-        message: "비밀번호가 일치하지 않습니다.",
-      });
-    }
+    const match = await bcrypt.compare(password, user.password);
+    if (!match)
+      return res.json({ success: false, message: "비밀번호가 일치하지 않습니다." });
 
-    const token = jwt.sign(
-      { id: user.id, userId: user.userId },
-      SECRET_KEY,
-      { expiresIn: "1h" }
-    );
+    const token = jwt.sign({ id: user.id, userId: user.userId }, SECRET_KEY, { expiresIn: "1h" });
 
     res.json({ success: true, user, token });
   } catch (err) {
@@ -147,22 +103,12 @@ app.post("/api/login", async (req, res) => {
   }
 });
 
-// 아이디 찾기
 app.post("/api/find-id", async (req, res) => {
   const { email } = req.body;
-
   try {
-    const [rows] = await db
-      .promise()
-      .query("SELECT userId FROM users WHERE email = ?", [email]);
-
-    if (rows.length === 0) {
-      return res.json({
-        success: false,
-        message: "해당 이메일로 가입된 계정이 없습니다.",
-      });
-    }
-
+    const [rows] = await db.promise().query("SELECT userId FROM users WHERE email = ?", [email]);
+    if (!rows.length)
+      return res.json({ success: false, message: "해당 이메일로 가입된 계정이 없습니다." });
     res.json({ success: true, userId: rows[0].userId });
   } catch (err) {
     console.error("❌ 아이디 찾기 오류:", err);
@@ -170,47 +116,30 @@ app.post("/api/find-id", async (req, res) => {
   }
 });
 
-// 비밀번호 찾기 (실제 비밀번호는 안 보여줌)
 app.post("/api/find-password", async (req, res) => {
   const { userId, email } = req.body;
-
   try {
     const [rows] = await db
       .promise()
-      .query(
-        "SELECT password FROM users WHERE userId = ? AND email = ?",
-        [userId, email]
-      );
+      .query("SELECT password FROM users WHERE userId = ? AND email = ?", [userId, email]);
 
-    if (rows.length === 0) {
-      return res.json({
-        success: false,
-        message: "정보가 일치하지 않습니다.",
-      });
-    }
+    if (!rows.length)
+      return res.json({ success: false, message: "정보가 일치하지 않습니다." });
 
-    res.json({
-      success: true,
-      password:
-        "비밀번호는 보안상 표시되지 않습니다. 관리자에게 문의하세요.",
-    });
+    res.json({ success: true, password: "비밀번호는 보안상 표시되지 않습니다." });
   } catch (err) {
     console.error("❌ 비밀번호 찾기 오류:", err);
     res.status(500).json({ success: false, message: "서버 오류 발생" });
   }
 });
 
-// 사용자 정보 조회 (토큰 기반)
 app.post("/api/user-info", async (req, res) => {
   const token = req.headers.authorization?.split(" ")[1];
-  if (!token)
-    return res
-      .status(401)
-      .json({ success: false, message: "토큰이 없습니다." });
+  if (!token) return res.status(401).json({ success: false, message: "토큰이 없습니다." });
 
   try {
     const decoded = jwt.verify(token, SECRET_KEY);
-    const userId = decoded.userId; // ← 토큰에서 추출 (중요!)
+    const userId = decoded.userId;
 
     const [rows] = await db
       .promise()
@@ -219,21 +148,15 @@ app.post("/api/user-info", async (req, res) => {
         [userId]
       );
 
-    if (rows.length === 0)
-      return res
-        .status(404)
-        .json({ success: false, message: "사용자를 찾을 수 없습니다." });
+    if (!rows.length)
+      return res.status(404).json({ success: false, message: "사용자를 찾을 수 없습니다." });
 
-    return res.json({
-      success: true,
-      user: rows[0], // ← 프론트가 기대하는 구조 맞춤
-    });
+    res.json({ success: true, user: rows[0] });
   } catch (err) {
     console.error("❌ 유저 정보 조회 오류:", err);
     res.status(500).json({ success: false, message: "서버 오류 발생" });
   }
 });
-
 
 // 회원 정보 수정
 app.put("/api/update-user", async (req, res) => {
@@ -399,14 +322,15 @@ app.post("/api/mentor", (req, res) => {
     rating,
     reviews,
     price,
+    category,
     tags,
     image,
     description,
   } = req.body;
 
   const sql = `
-    INSERT INTO mentors (name, position, experience, company, rating, reviews, price, tags, image, description)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    INSERT INTO mentors (name, position, experience, company, rating, reviews, price, category, tags, image, description)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `;
 
   const values = [
@@ -417,6 +341,7 @@ app.post("/api/mentor", (req, res) => {
     rating,
     reviews,
     price,
+    category,
     tags,
     image,
     description,

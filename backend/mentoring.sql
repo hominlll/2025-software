@@ -10,6 +10,7 @@ CREATE TABLE mentors (
     rating FLOAT,
     reviews INT,
     price INT,
+    category VARCHAR(50),
     tags VARCHAR(255),
     image VARCHAR(255),
     description TEXT
@@ -22,6 +23,7 @@ INSERT INTO mentors (
         rating,
         reviews,
         price,
+        category,
         tags,
         image
     )
@@ -33,6 +35,7 @@ VALUES (
         5.0,
         186,
         55000,
+        '컴퓨터공학',
         '코딩 테스트,이력서,기술면접,frontend,취업',
         'https://cdn.pixabay.com/photo/2021/08/05/10/34/man-6521725_1280.jpg'
     ),
@@ -44,6 +47,7 @@ VALUES (
         5.0,
         25,
         9900,
+        '컴퓨터공학',
         '이력서,자기개발,퍼스널 브랜딩,자기소개서,취업',
         'https://cdn.pixabay.com/photo/2016/11/14/03/16/person-1824144_1280.jpg'
     ),
@@ -55,6 +59,7 @@ VALUES (
         5.0,
         44,
         179900,
+        '컴퓨터공학',
         'Java,Spring,코딩 테스트,이력서,기술면접',
         'https://cdn.pixabay.com/photo/2017/01/12/14/57/woman-1979266_1280.jpg'
     ),
@@ -66,6 +71,7 @@ VALUES (
         4.8,
         60,
         75000,
+        '컴퓨터공학',
         'JavaScript,Node.js,React,프론트엔드,백엔드',
         'https://cdn.pixabay.com/photo/2017/12/10/14/47/man-3019638_1280.jpg'
     ),
@@ -77,6 +83,7 @@ VALUES (
         5.0,
         120,
         120000,
+        '컴퓨터공학',
         'Python,Machine Learning,Deep Learning,AI,취업',
         'https://cdn.pixabay.com/photo/2020/03/14/20/26/artificial-intelligence-4938926_1280.jpg'
     ),
@@ -88,6 +95,7 @@ VALUES (
         4.7,
         88,
         65000,
+        '컴퓨터공학',
         'Python,R,SQL,데이터분석,통계',
         'https://cdn.pixabay.com/photo/2018/01/06/10/34/person-3064075_1280.jpg'
     ),
@@ -99,6 +107,7 @@ VALUES (
         4.9,
         45,
         80000,
+        '컴퓨터공학',
         'UI,UX,프로토타입,Figma,디자인',
         'https://cdn.pixabay.com/photo/2022/03/16/13/34/woman-7072636_1280.jpg'
     ),
@@ -110,6 +119,7 @@ VALUES (
         4.5,
         30,
         55000,
+        '컴퓨터공학',
         'React,JavaScript,프론트엔드,코딩 테스트',
         'https://cdn.pixabay.com/photo/2017/08/06/00/15/blond-2594050_1280.jpg'
     ),
@@ -121,6 +131,7 @@ VALUES (
         4.8,
         70,
         90000,
+        '컴퓨터공학',
         'Java,Spring,API,서버,데이터베이스',
         'https://cdn.pixabay.com/photo/2016/03/26/22/13/man-1281679_1280.jpg'
     ),
@@ -132,6 +143,7 @@ VALUES (
         5.0,
         95,
         130000,
+        '컴퓨터공학',
         'Python,Deep Learning,TensorFlow,AI,취업',
         'https://cdn.pixabay.com/photo/2015/05/15/14/47/robot-768275_1280.jpg'
     );

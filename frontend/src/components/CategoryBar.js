@@ -1,10 +1,9 @@
-// src/components/CategoryBar.js
 import React from "react";
 
 const categories = [
-  '전체','경영','경제','교육','법',
-  '디자인','기계','전기·전자','컴퓨터공학',
-  '화학','생명','면접',
+  '전체', '경영', '경제', '교육', '법',
+  '디자인', '기계', '전기·전자', '컴퓨터공학',
+  '화학', '생명', '면접',
 ];
 
 export default function CategoryBar({ selected, setSelected }) {
@@ -14,13 +13,12 @@ export default function CategoryBar({ selected, setSelected }) {
         <button
           key={cat}
           type="button"
-          onClick={() => setSelected(cat)}
+          onClick={() => setSelected(cat.trim())}
           className={`community-category-btn w-full text-left px-3 py-1.5
                       text-sm rounded-md border transition 
-            ${
-              selected === cat
-                ? "bg-green-600 text-white border-green-600"
-                : "bg-white text-gray-800 border-gray-300 hover:bg-gray-100"
+            ${selected === cat
+              ? "bg-green-600 text-white border-green-600"
+              : "bg-white text-gray-800 border-gray-300 hover:bg-gray-100"
             }`}
         >
           {cat}
