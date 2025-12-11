@@ -9,7 +9,7 @@ const MentorSection = ({ selectedCategory }) => {
   // 전체 멘토 데이터 불러오기
   useEffect(() => {
     axios
-      .get("http://localhost:5000/mentors")
+      .get("http://localhost:5000/api/mentors")
       .then((res) => {
         setMentors(res.data);
         setFiltered(res.data); // 초기 전체 출력
@@ -19,10 +19,10 @@ const MentorSection = ({ selectedCategory }) => {
 
   // 카테고리 변경 시 필터링
   useEffect(() => {
-    const category = selectedCategory?.trim();  // 🔥 공백 제거
+    const category = selectedCategory?.trim();  // 공백 제거
 
     if (!category || category === "전체") {
-      setFiltered(mentors); // 🔥 전체 출력 확정
+      setFiltered(mentors); // 전체 출력 확정
     } else {
       setFiltered(mentors.filter((m) => m.category === category));
     }

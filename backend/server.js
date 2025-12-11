@@ -12,6 +12,45 @@ const SECRET_KEY = "your_secret_key";
 app.use(cors());
 app.use(bodyParser.json());
 
+/* -------------------- 이미지 업로드 설정 (multer) -------------------- */
+import multer from "multer";
+import path from "path";
+
+// uploads 폴더 없으면 생성
+import fs from "fs";
+if (!fs.existsSync("uploads")) {
+  fs.mkdirSync("uploads");
+}
+
+// 저장 방식 설정
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, "uploads/");
+  },
+  filename: (req, file, cb) => {
+    cb(null, Date.now() + "-" + file.originalname);
+  },
+});
+
+const upload = multer({ storage });
+
+// 정적 이미지 제공
+app.use("/uploads", express.static("uploads"));
+
+/* -------------------- 파일 업로드 API 추가 -------------------- */
+app.post("/api/upload", upload.single("image"), (req, res) => {
+  if (!req.file) {
+    return res.json({ success: false, message: "이미지 업로드 실패" });
+  }
+
+  const fileUrl = `http://localhost:5000/uploads/${req.file.filename}`;
+
+  res.json({
+    success: true,
+    url: fileUrl,
+  });
+});
+
 /* -------------------- DB 연결 -------------------- */
 
 const db = mysql.createConnection({
@@ -278,8 +317,8 @@ app.delete("/api/delete-user", async (req, res) => {
 
 /* -------------------- 멘토 API -------------------- */
 
-// 멘토 목록
-app.get("/mentors", (req, res) => {
+/* 멘토 목록 (경로 통일: /api/mentors) */
+app.get("/api/mentors", (req, res) => {
   mentoringDB.query("SELECT * FROM mentors", (err, results) => {
     if (err) {
       console.error("DB error:", err);
@@ -289,7 +328,7 @@ app.get("/mentors", (req, res) => {
   });
 });
 
-// 멘토 상세 조회
+/* 멘토 상세 조회 */
 app.get("/api/mentor/:id", (req, res) => {
   const mentorId = req.params.id;
 
@@ -312,24 +351,33 @@ app.get("/api/mentor/:id", (req, res) => {
   );
 });
 
-// 멘토 등록
+/* 멘토 등록 */
 app.post("/api/mentor", (req, res) => {
-  const {
+  let {
     name,
     position,
     experience,
     company,
-    rating,
-    reviews,
     price,
     category,
     tags,
     image,
     description,
+    rating,
+    reviews,
   } = req.body;
 
+  // 기본값 처리
+  rating = rating ?? 0;
+  reviews = reviews ?? 0;
+
+  tags = tags ?? "";
+  image = image ?? "";
+  description = description ?? "";
+
   const sql = `
-    INSERT INTO mentors (name, position, experience, company, rating, reviews, price, category, tags, image, description)
+    INSERT INTO mentors 
+    (name, position, experience, company, rating, reviews, price, category, tags, image, description)
     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `;
 
@@ -359,6 +407,7 @@ app.post("/api/mentor", (req, res) => {
     });
   });
 });
+
 
 /* -------------------- 스터디 API -------------------- */
 
