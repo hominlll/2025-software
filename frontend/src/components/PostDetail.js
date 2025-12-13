@@ -27,65 +27,44 @@ export default function PostDetail() {
   const navigate = useNavigate();
   const { state } = useLocation();
   const { id } = useParams();
-
   const [post, setPost] = useState(state?.post || null);
   const [comments, setComments] = useState([]);
   const [commentInput, setCommentInput] = useState("");
 
   // 글 데이터 불러오기
   useEffect(() => {
-    if (post) return; // state로 이미 있으면 패스
-
-    axios.get(`http://localhost:5000/api/community/posts/${id}`)
-      .then(res => {
+    if (post) return;
+    axios
+      .get(`http://localhost:5000/api/community/posts/${id}`)
+      .then((res) => {
         if (res.data.success) setPost(res.data.post);
       })
-      .catch(err => console.error("글 불러오기 오류:", err));
+      .catch((err) => console.error("글 불러오기 오류:", err));
   }, [id, post]);
 
   // 댓글 불러오기
   useEffect(() => {
     if (!post) return;
-
+    const token = localStorage.getItem("token");
     axios
-      .get(`http://localhost:5000/api/community/posts/${post.id}/comments`)
-      .then((res) => {
-        const mapped = res.data.map((c) => ({
-          id: c.id,
-          content: c.content,
-          createdAt: c.created_at,
-          userId: c.userId,
-        }));
-        setComments(mapped);
+      .get(`http://localhost:5000/api/community/posts/${post.id}/comments`, {
+        headers: { Authorization: `Bearer ${token}` },
       })
+      .then((res) => setComments(res.data)) // 서버에서 displayName 포함
       .catch((err) => console.error("댓글 불러오기 오류:", err));
   }, [post]);
 
+  // 댓글 작성
   const handleAddComment = async () => {
     if (!commentInput.trim() || !post) return;
-
     try {
-      const body = {
-        userId: null, // 로그인 연결 필요 시 수정
-        content: commentInput.trim(),
-        isAnonymous: true
-      };
-
+      const token = localStorage.getItem("token");
       const res = await axios.post(
         `http://localhost:5000/api/community/posts/${post.id}/comments`,
-        body
+        { content: commentInput.trim() }, // userId는 JWT에서 처리
+        { headers: { Authorization: `Bearer ${token}` } }
       );
-
-      const saved = res.data;
-
-      const newComment = {
-        id: saved.id,
-        content: saved.content,
-        createdAt: saved.created_at,
-        userId: saved.userId,
-      };
-
-      setComments((prev) => [...prev, newComment]);
+      setComments((prev) => [...prev, res.data]);
       setCommentInput("");
     } catch (err) {
       console.error("댓글 작성 오류:", err);
@@ -147,17 +126,17 @@ export default function PostDetail() {
               comments.map((c) => (
                 <div key={c.id} className="border rounded-lg px-4 py-3 text-sm bg-white">
                   <div className="flex gap-3">
-                    <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-xs text-gray-500 flex-shrink-0">
-                      익명
+                    <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-xs text-gray-500 flex-shrink-0 whitespace-nowrap overflow-hidden text-ellipsis">
+                      {c.displayName}
                     </div>
                     <div className="flex-1">
-                      <div className="flex items-center justify-between mb-1">
-                        <div className="flex flex-col">
-                          <span className="text-sm font-medium">익명</span>
-                          <span className="text-xs text-gray-400">
-                            {formatCommentTime(c.createdAt)}
-                          </span>
-                        </div>
+                      <div className="flex flex-col mb-1">
+                        <span className="text-sm font-medium whitespace-nowrap overflow-hidden text-ellipsis">
+                          {c.displayName}
+                        </span>
+                        <span className="text-xs text-gray-400">
+                          {formatCommentTime(c.createdAt)}
+                        </span>
                       </div>
                       <p className="whitespace-pre-line text-gray-800 mt-1">{c.content}</p>
                     </div>

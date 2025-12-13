@@ -29,9 +29,7 @@ const MyPage = ({ userNickname, setUserNickname, currentUserId }) => {
           const u = res.data.user;
           setUserInfo(u);
           setEditData({ name: u.name || "", nickname: u.nickname || "", email: u.email || "" });
-        } else {
-          alert("사용자 정보를 불러오지 못했습니다.");
-        }
+        } else alert("사용자 정보를 불러오지 못했습니다.");
       })
       .catch(() => alert("사용자 정보를 불러오지 못했습니다."));
 
@@ -46,14 +44,10 @@ const MyPage = ({ userNickname, setUserNickname, currentUserId }) => {
       .catch(() => { setMyStudies([]); setJoinedStudies([]); });
 
     // 커뮤니티 글 정보
-    axios.get("http://localhost:5000/api/community/my-posts", {
-      headers: { Authorization: `Bearer ${token}` }
-    })
-    .then(res => {
-      if(res.data.success) setMyPosts(res.data.posts || []);
-    })
-    .catch(() => setMyPosts([]))
-    .finally(() => setLoading(false));
+    axios.get("http://localhost:5000/api/community/my-posts", { headers: { Authorization: `Bearer ${token}` } })
+      .then(res => { if(res.data.success) setMyPosts(res.data.posts || []); })
+      .catch(() => setMyPosts([]))
+      .finally(() => setLoading(false));
   }, []);
 
   const handleUpdate = () => {
@@ -64,9 +58,7 @@ const MyPage = ({ userNickname, setUserNickname, currentUserId }) => {
           alert("정보가 성공적으로 수정되었습니다!");
           setUserInfo(prev => ({ ...prev, ...editData }));
           if (userInfo.userId === currentUserId) setUserNickname(editData.nickname);
-        } else {
-          alert("정보 수정 실패");
-        }
+        } else alert("정보 수정 실패");
       })
       .catch(() => alert("정보 수정 실패"));
   };
@@ -95,9 +87,7 @@ const MyPage = ({ userNickname, setUserNickname, currentUserId }) => {
         if (res.data.success) {
           alert("스터디가 삭제되었습니다.");
           setMyStudies(prev => prev.filter(s => s.id !== studyId));
-        } else {
-          alert("삭제 실패");
-        }
+        } else alert("삭제 실패");
       })
       .catch(() => alert("삭제 실패"));
   };
@@ -109,25 +99,30 @@ const MyPage = ({ userNickname, setUserNickname, currentUserId }) => {
         if (res.data.success) {
           alert("참여가 취소되었습니다.");
           setJoinedStudies(prev => prev.filter(s => s.id !== studyId));
-        } else {
-          alert("참여 취소 실패");
-        }
+        } else alert("참여 취소 실패");
       })
       .catch(() => alert("참여 취소 실패"));
   };
 
+  // 글 삭제 (JWT로 본인 확인)
   const handleDeletePost = (postId) => {
     if (!window.confirm("정말 삭제하시겠습니까?")) return;
-    axios.delete(`http://localhost:5000/api/posts/${postId}`, { headers: { Authorization: `Bearer ${token}` } })
-      .then(res => {
-        if(res.data.success) {
-          alert("글이 삭제되었습니다.");
-          setMyPosts(prev => prev.filter(p => p.id !== postId));
-        } else {
-          alert("삭제 실패");
-        }
-      })
-      .catch(() => alert("삭제 실패"));
+
+    axios.delete(`http://localhost:5000/api/community/posts/${postId}`, {
+      headers: { Authorization: `Bearer ${token}` } // JWT로 본인 글 확인
+    })
+    .then(res => {
+      if(res.data.success) {
+        alert("글이 삭제되었습니다.");
+        setMyPosts(prev => prev.filter(p => p.id !== postId));
+      } else {
+        alert(res.data.message || "삭제 실패");
+      }
+    })
+    .catch(err => {
+      console.error(err);
+      alert("삭제 실패");
+    });
   };
 
   if (loading) return <p className="text-center mt-20">불러오는 중...</p>;
