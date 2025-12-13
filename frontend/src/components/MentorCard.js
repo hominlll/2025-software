@@ -1,24 +1,20 @@
 import { useNavigate } from "react-router-dom";
 
-const MentorCard = ({ mentor }) => {
+const MentorCard = ({ mentor, onTagClick }) => {
   const navigate = useNavigate();
 
   return (
     <div
-      className="w-85 bg-white shadow-md rounded-2xl p-4 hover:shadow-xl transition cursor-pointer"
+      className="bg-white shadow-md rounded-2xl p-4 hover:shadow-xl transition cursor-pointer"
       onClick={() => navigate(`/mentor/${mentor.id}`)}
     >
-
-      {/* ⭐ mentor.title 표시 (볼드체) */}
-      <h3 className="mt-3 text-lg font-bold">{mentor.title}</h3>
-
       <img
         src={mentor.image}
         alt={mentor.name}
         className="w-full h-40 object-cover rounded-xl"
       />
 
-
+      <h3 className="mt-3 text-lg font-bold">{mentor.title}</h3>
 
       <p className="text-gray-800 text-sm font-semibold">{mentor.name}</p>
 
@@ -36,9 +32,18 @@ const MentorCard = ({ mentor }) => {
         ₩{mentor.price.toLocaleString()} / 1시간
       </p>
 
-      <div className="flex flex-wrap gap-1 mt-3">
+      <div className="flex flex-wrap gap-2 mt-3">
         {(mentor.tags || "").split(",").map((tag) => (
-          <span key={tag} className="text-xs bg-gray-100 px-2 py-1 rounded-full text-gray-700">
+          <span
+            key={tag}
+            onClick={(e) => {
+              e.stopPropagation();
+              onTagClick(tag);
+            }}
+            className="text-xs bg-gray-100 px-3 py-1 rounded-full text-gray-700
+              cursor-pointer transition
+              hover:bg-emerald-500 hover:text-white hover:scale-105"
+          >
             #{tag}
           </span>
         ))}

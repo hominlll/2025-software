@@ -316,43 +316,110 @@ app.delete("/api/delete-user", async (req, res) => {
 });
 
 /* -------------------- 멘토 API -------------------- */
+/* ================== 멘토 목록 / 태그 정확검색 / 검색 / 정렬 / 페이지네이션 ================== */
 
-/* 멘토 목록 + 검색 */
 app.get("/api/mentors", (req, res) => {
   const search = req.query.search || "";
   const category = req.query.category || "";
+  const sort = req.query.sort || "latest";
+  const page = parseInt(req.query.page || 1);
+  const limit = parseInt(req.query.limit || 20);
+  const isTag = req.query.isTag === "true";
 
-  let sql = "SELECT * FROM mentors WHERE 1=1";
+  const offset = (page - 1) * limit;
+
+  let whereSql = "WHERE 1=1";
   const params = [];
 
-  // 카테고리 필터
+  /* 📁 카테고리 */
   if (category && category !== "전체") {
-    sql += " AND category = ?";
+    whereSql += " AND category = ?";
     params.push(category);
   }
 
-  // 🔍 검색 필터 (title, position, tags)
+  /* 🔍 검색 */
   if (search.trim() !== "") {
-    sql += `
-      AND (
-        title LIKE ?
-        OR position LIKE ?
-        OR tags LIKE ?
-      )
-    `;
-    const keyword = `%${search}%`;
-    params.push(keyword, keyword, keyword);
+    const keyword = search.trim();
+
+    if (isTag) {
+      /*
+        ✅ 태그 클릭 검색
+        - tags : 정확히 일치 (FIND_IN_SET)
+        - title / position : 포함 검색
+      */
+      whereSql += `
+        AND (
+          FIND_IN_SET(?, tags)
+          OR title LIKE ?
+          OR position LIKE ?
+        )
+      `;
+      params.push(keyword, `%${keyword}%`, `%${keyword}%`);
+    } else {
+      /*
+        ✅ 일반 검색
+        - title / position / tags 포함 검색
+      */
+      whereSql += `
+        AND (
+          title LIKE ?
+          OR position LIKE ?
+          OR tags LIKE ?
+        )
+      `;
+      const likeWord = `%${keyword}%`;
+      params.push(likeWord, likeWord, likeWord);
+    }
   }
 
-  mentoringDB.query(sql, params, (err, results) => {
+  /* 🔃 정렬 */
+  let orderSql = "ORDER BY id DESC"; // 최신순
+  if (sort === "oldest") orderSql = "ORDER BY id ASC";
+  if (sort === "rating") orderSql = "ORDER BY rating DESC";
+  if (sort === "reviews") orderSql = "ORDER BY reviews DESC";
+
+  /* 📊 전체 개수 */
+  const countSql = `
+    SELECT COUNT(*) AS total
+    FROM mentors
+    ${whereSql}
+  `;
+
+  mentoringDB.query(countSql, params, (err, countResult) => {
     if (err) {
-      console.error("멘토 검색 오류:", err);
+      console.error("멘토 개수 조회 오류:", err);
       return res.status(500).json({ success: false });
     }
-    res.json(results);
+
+    const total = countResult[0].total;
+    const totalPages = Math.ceil(total / limit);
+
+    /* 📄 데이터 조회 */
+    const dataSql = `
+      SELECT *
+      FROM mentors
+      ${whereSql}
+      ${orderSql}
+      LIMIT ? OFFSET ?
+    `;
+
+    mentoringDB.query(
+      dataSql,
+      [...params, limit, offset],
+      (err, mentors) => {
+        if (err) {
+          console.error("멘토 목록 조회 오류:", err);
+          return res.status(500).json({ success: false });
+        }
+
+        res.json({
+          mentors,
+          totalPages,
+        });
+      }
+    );
   });
 });
-
 
 /* 멘토 상세 조회 */
 app.get("/api/mentor/:id", (req, res) => {
