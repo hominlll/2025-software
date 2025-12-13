@@ -12,6 +12,7 @@ import MyPage from "./pages/MyPage";
 import Community from "./pages/Community";
 import PostDetail from "./components/PostDetail";
 import MentorDetailPage from "./pages/MentorDetailPage";
+import MentorEnrollPage from "./pages/MentorEnrollPage";
 import StudyDetailPage from "./pages/StudyDetailPage";
 
 function App() {
@@ -97,6 +98,7 @@ function App() {
 
         <Route path="/study/:id" element={<StudyDetailPage />} />
         <Route path="/mentor/:id" element={<MentorDetailPage />} />
+        <Route path="/mentor/:id/enrollment" element={<MentorEnrollPage />} />
 
         <Route
           path="/community"

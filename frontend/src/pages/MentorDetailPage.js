@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 
 export default function MentorDetailPage() {
     const { id } = useParams();
+    const navigate = useNavigate();
     const [mentor, setMentor] = useState(null);
 
     useEffect(() => {
@@ -12,15 +13,17 @@ export default function MentorDetailPage() {
             .then((res) => {
                 if (res.data.success) setMentor(res.data.mentor);
             })
-            .catch((err) => console.error(err));
+            .catch(console.error);
     }, [id]);
 
-    if (!mentor) return <div className="p-10 text-center">멘토 정보를 불러오는 중...</div>;
+    if (!mentor) {
+        return <div className="p-10 text-center">멘토 정보를 불러오는 중...</div>;
+    }
 
     return (
         <div className="max-w-5xl mx-auto p-8">
 
-            {/* 상단 프로필 영역 */}
+            {/* 🔹 상단 프로필 카드 (기존 디자인 유지) */}
             <div className="flex gap-10 items-center bg-white shadow-md rounded-2xl p-8">
                 <img
                     src={mentor.image}
@@ -28,14 +31,16 @@ export default function MentorDetailPage() {
                     className="w-48 h-48 rounded-2xl object-cover"
                 />
 
-                <div className="flex flex-col gap-2">
-                    <h1 className="text-3xl font-bold">{mentor.name}</h1>
+                <div className="flex-1 flex flex-col gap-2">
+                    <h1 className="text-3xl font-bold">{mentor.title}</h1>
 
                     <p className="text-gray-600 text-lg">
-                        {mentor.position} · {mentor.experience}
+                        {mentor.name} · {mentor.position}
                     </p>
 
-                    <p className="text-gray-500">{mentor.company}</p>
+                    <p className="text-gray-500">
+                        {mentor.company} · {mentor.experience}
+                    </p>
 
                     <p className="text-yellow-500 font-semibold text-lg">
                         ⭐ {mentor.rating} / 5.0 ({mentor.reviews}개 리뷰)
@@ -56,33 +61,53 @@ export default function MentorDetailPage() {
                         ))}
                     </div>
                 </div>
+
+                {/* 🔹 신청 버튼 */}
+                <div className="flex flex-col justify-end">
+                    <button
+                        onClick={() => navigate(`/mentor/${mentor.id}/enrollment`)}
+                        className="bg-emerald-500 hover:bg-emerald-600 text-white px-8 py-4 rounded-xl font-semibold"
+                    >
+                        멘토링 신청하기
+                    </button>
+                </div>
             </div>
 
-            {/* 상세 설명 */}
+            {/* 🔹 멘토 소개 */}
             <div className="mt-10 bg-white shadow-md rounded-2xl p-8">
                 <h2 className="text-2xl font-bold mb-4">멘토 소개</h2>
                 <p className="text-gray-700 leading-7">
-                    {mentor.description || "등록된 상세 소개가 없습니다."}
+                    {mentor.description || "등록된 멘토 소개가 없습니다."}
                 </p>
             </div>
 
-            {/* 리뷰 섹션 (현재는 샘플 목업) */}
+            {/* 🔹 멘토링 방식 */}
+            <div className="mt-10 bg-white shadow-md rounded-2xl p-8">
+                <h2 className="text-2xl font-bold mb-4">멘토링 방식</h2>
+                <ul className="list-disc pl-5 text-gray-700 leading-7">
+                    <li>사전 질문을 기반으로 맞춤형 멘토링</li>
+                    <li>실무 중심 코드 리뷰 및 커리어 상담</li>
+                    <li>Zoom / Google Meet을 통한 비대면 진행</li>
+                </ul>
+            </div>
+
+            {/* 🔹 리뷰 */}
             <div className="mt-10 bg-white shadow-md rounded-2xl p-8">
                 <h2 className="text-2xl font-bold mb-4">멘토링 리뷰</h2>
 
-                <p className="text-gray-500 text-sm">
-                    현재 리뷰 데이터베이스가 없어서 샘플 리뷰를 표시합니다.
-                </p>
-
-                <div className="mt-5 flex flex-col gap-5">
+                <div className="flex flex-col gap-5">
                     <div className="p-4 bg-gray-50 rounded-xl shadow-sm">
                         <p className="font-semibold">⭐ 5.0</p>
-                        <p className="text-gray-600 mt-1">정말 많은 도움이 되었습니다! 설명도 친절하고 경험도 풍부하십니다.</p>
+                        <p className="text-gray-600 mt-1">
+                            정말 많은 도움이 되었습니다! 실무적인 조언이 최고예요.
+                        </p>
                     </div>
 
                     <div className="p-4 bg-gray-50 rounded-xl shadow-sm">
-                        <p className="font-semibold">⭐ 5.0</p>
-                        <p className="text-gray-600 mt-1">코칭을 받고 방향성을 확실히 잡을 수 있었습니다.</p>
+                        <p className="font-semibold">⭐ 4.8</p>
+                        <p className="text-gray-600 mt-1">
+                            방향성을 잡는 데 큰 도움이 되었습니다.
+                        </p>
                     </div>
                 </div>
             </div>

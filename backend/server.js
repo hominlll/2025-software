@@ -343,7 +343,7 @@ app.get("/api/mentors", (req, res) => {
 
     if (isTag) {
       /*
-        ✅ 태그 클릭 검색
+        태그 클릭 검색
         - tags : 정확히 일치 (FIND_IN_SET)
         - title / position : 포함 검색
       */
