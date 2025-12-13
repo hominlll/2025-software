@@ -22,11 +22,15 @@ export default function Community({ currentUserId, userNickname, isLoggedIn }) {
     axios
       .get("http://localhost:5000/api/community/posts")
       .then((res) => {
-        const mapped = res.data.map((p) => ({
-          ...p,
-          createdAt: p.created_at,
-        }));
-        setPosts(mapped);
+        if (res.data.success) {
+          const mapped = res.data.posts.map((p) => ({
+            ...p,
+            createdAt: p.created_at,
+          }));
+          setPosts(mapped);
+        } else {
+          alert("게시글을 불러오지 못했습니다 ㅠㅠ");
+        }
       })
       .catch((err) => {
         console.error("게시글 불러오기 오류:", err);
@@ -68,16 +72,24 @@ export default function Community({ currentUserId, userNickname, isLoggedIn }) {
     }
 
     try {
-      const body = {
-        userId: currentUserId,
-        title: postFromModal.title,
-        category: postFromModal.category,
-        content: postFromModal.content,
-      };
+      const token = localStorage.getItem("token"); // JWT 토큰 가져오기
+      if (!token) {
+        alert("로그인이 필요합니다.");
+        return;
+      }
 
       const res = await axios.post(
         "http://localhost:5000/api/community/posts",
-        body
+        {
+          title: postFromModal.title,
+          category: postFromModal.category,
+          content: postFromModal.content,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`, // 토큰 헤더로 전달
+          },
+        }
       );
 
       const savedPost = res.data.post;

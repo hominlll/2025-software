@@ -11,6 +11,7 @@ const MyPage = ({ userNickname, setUserNickname, currentUserId }) => {
   const [passwordData, setPasswordData] = useState({ oldPassword: "", newPassword: "" });
   const [myStudies, setMyStudies] = useState([]);
   const [joinedStudies, setJoinedStudies] = useState([]);
+  const [myPosts, setMyPosts] = useState([]);
 
   const token = localStorage.getItem("token");
 
@@ -21,6 +22,7 @@ const MyPage = ({ userNickname, setUserNickname, currentUserId }) => {
       return;
     }
 
+    // 사용자 정보
     axios.post("http://localhost:5000/api/user-info", {}, { headers: { Authorization: `Bearer ${token}` } })
       .then(res => {
         if (res.data.success) {
@@ -33,6 +35,7 @@ const MyPage = ({ userNickname, setUserNickname, currentUserId }) => {
       })
       .catch(() => alert("사용자 정보를 불러오지 못했습니다."));
 
+    // 스터디 정보
     axios.get("http://localhost:5000/api/user-studies", { headers: { Authorization: `Bearer ${token}` } })
       .then(res => {
         if (res.data.success) {
@@ -40,8 +43,17 @@ const MyPage = ({ userNickname, setUserNickname, currentUserId }) => {
           setJoinedStudies(res.data.joinedStudies || []);
         }
       })
-      .catch(() => { setMyStudies([]); setJoinedStudies([]); })
-      .finally(() => setLoading(false));
+      .catch(() => { setMyStudies([]); setJoinedStudies([]); });
+
+    // 커뮤니티 글 정보
+    axios.get("http://localhost:5000/api/community/my-posts", {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+    .then(res => {
+      if(res.data.success) setMyPosts(res.data.posts || []);
+    })
+    .catch(() => setMyPosts([]))
+    .finally(() => setLoading(false));
   }, []);
 
   const handleUpdate = () => {
@@ -104,6 +116,20 @@ const MyPage = ({ userNickname, setUserNickname, currentUserId }) => {
       .catch(() => alert("참여 취소 실패"));
   };
 
+  const handleDeletePost = (postId) => {
+    if (!window.confirm("정말 삭제하시겠습니까?")) return;
+    axios.delete(`http://localhost:5000/api/posts/${postId}`, { headers: { Authorization: `Bearer ${token}` } })
+      .then(res => {
+        if(res.data.success) {
+          alert("글이 삭제되었습니다.");
+          setMyPosts(prev => prev.filter(p => p.id !== postId));
+        } else {
+          alert("삭제 실패");
+        }
+      })
+      .catch(() => alert("삭제 실패"));
+  };
+
   if (loading) return <p className="text-center mt-20">불러오는 중...</p>;
   if (!userInfo) return <p className="text-center mt-20">사용자 정보를 불러오지 못했습니다.</p>;
 
@@ -116,8 +142,8 @@ const MyPage = ({ userNickname, setUserNickname, currentUserId }) => {
             ← 뒤로가기
           </button>
 
-          {["info", "edit", "password", "studies"].map(section => {
-            const labels = { info: "내 정보", edit: "정보 수정", password: "비밀번호 변경", studies: "스터디 관리" };
+          {["info", "edit", "password", "studies", "posts"].map(section => {
+            const labels = { info: "내 정보", edit: "정보 수정", password: "비밀번호 변경", studies: "스터디 관리", posts: "커뮤니티 글 관리" };
             return (
               <button
                 key={section}
@@ -193,6 +219,24 @@ const MyPage = ({ userNickname, setUserNickname, currentUserId }) => {
                   <div className="flex gap-2">
                     <button onClick={() => navigate(`/study/${s.id}`)} className="px-3 py-1 bg-blue-500 text-white rounded-md hover:bg-blue-600 text-sm">상세보기</button>
                     <button onClick={() => handleCancelParticipation(s.id)} className="px-3 py-1 bg-orange-500 text-white rounded-md hover:bg-orange-600 text-sm">참여 취소</button>
+                  </div>
+                </div>
+              ))}
+            </SectionCard>
+          )}
+
+          {activeSection === "posts" && (
+            <SectionCard title="내 커뮤니티 글 관리">
+              {myPosts.length === 0 && <p>작성한 글이 없습니다.</p>}
+              {myPosts.map(p => (
+                <div key={p.id} className="flex justify-between items-center p-4 border rounded-lg mb-3">
+                  <div>
+                    <p className="font-semibold">{p.title}</p>
+                    <p className="text-sm text-gray-500">작성일: {new Date(p.created_at).toLocaleDateString()}</p>
+                  </div>
+                  <div className="flex gap-2">
+                    <button onClick={() => navigate(`/community/${p.id}`, { state: { post: p } })} className="px-3 py-1 bg-blue-500 text-white rounded-md hover:bg-blue-600 text-sm">상세보기</button>
+                    <button onClick={() => handleDeletePost(p.id)} className="px-3 py-1 bg-red-500 text-white rounded-md hover:bg-red-600 text-sm">삭제</button>
                   </div>
                 </div>
               ))}

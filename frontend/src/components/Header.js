@@ -1,11 +1,17 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import './Header.css';
 import LoginModal from './LoginModal';
 
 const Header = ({ isLoggedIn, setIsLoggedIn, selectedTab, setSelectedTab, setUserNickname }) => {
   const [showModal, setShowModal] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // 🔹 내 정보 페이지나 PostDetail 등 특정 페이지에서는 헤더 숨김
+  const hiddenPaths = ['/mypage', '/post']; // 필요 시 다른 경로 추가
+  const isHidden = hiddenPaths.some(path => location.pathname.startsWith(path));
+  if (isHidden) return null; // 해당 페이지에서는 Header 렌더링 안 함
 
   // ⭐ 로그인 성공 시 닉네임 상태 업데이트
   const handleLoginSuccess = (nickname) => {
@@ -78,7 +84,7 @@ const Header = ({ isLoggedIn, setIsLoggedIn, selectedTab, setSelectedTab, setUse
       {showModal && (
         <LoginModal
           onClose={() => setShowModal(false)}
-          onLoginSuccess={handleLoginSuccess} // ⭐ 전달
+          onLoginSuccess={handleLoginSuccess}
         />
       )}
     </header>

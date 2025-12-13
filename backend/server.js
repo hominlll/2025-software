@@ -699,55 +699,6 @@ app.post("/api/studies/:id/views", async (req, res) => {
   }
 });
 
-/* -------------------- 커뮤니티 게시글 / 댓글 API -------------------- */
-
-// 게시글 목록 가져오기
-app.get("/api/community/posts", async (req, res) => {
-  try {
-    const [rows] = await db
-      .promise()
-      .query("SELECT * FROM community_info ORDER BY created_at DESC");
-    res.json(rows);
-  } catch (err) {
-    console.error("❌ 커뮤니티 글 목록 오류:", err);
-    res.status(500).json({ success: false, message: "서버 오류 발생" });
-  }
-});
-
-// 게시글 작성
-app.post("/api/community/posts", async (req, res) => {
-  const { userId, title, category, content } = req.body;
-
-  if (!userId || !title || !category || !content) {
-    return res
-      .status(400)
-      .json({ success: false, message: "필수 값이 누락되었습니다." });
-  }
-
-  try {
-    const [result] = await db
-      .promise()
-      .query(
-        "INSERT INTO community_info (userId, title, category, content) VALUES (?, ?, ?, ?)",
-        [userId, title, category, content]
-      );
-
-    const post = {
-      id: result.insertId,
-      userId,
-      title,
-      category,
-      content,
-      created_at: new Date(),
-    };
-
-    res.status(201).json({ success: true, post });
-  } catch (err) {
-    console.error("❌ 커뮤니티 글 작성 오류:", err);
-    res.status(500).json({ success: false, message: "서버 오류 발생" });
-  }
-});
-
 // 내 스터디 + 참여중인 스터디 조회
 app.get("/api/user-studies", async (req, res) => {
   const token = req.headers.authorization?.split(" ")[1];
@@ -790,7 +741,160 @@ app.get("/api/user-studies", async (req, res) => {
   }
 });
 
-// ------------------- ✅ 커뮤니티 댓글 API -------------------
+/* -------------------- 커뮤니티 게시글 / 댓글 API -------------------- */
+/* -------------------- 게시글 -------------------- */
+
+// 모든 게시글 가져오기
+app.get("/api/community/posts", async (req, res) => {
+  try {
+    const [rows] = await db
+      .promise()
+      .query("SELECT * FROM community_info ORDER BY created_at DESC");
+
+    const posts = rows.map(post => ({
+      ...post,
+      displayName: post.isAnonymous ? "익명" : post.userId
+    }));
+
+    res.json({ success: true, posts });
+  } catch (err) {
+    console.error("❌ 커뮤니티 글 목록 오류:", err);
+    res.status(500).json({ success: false, message: "서버 오류 발생" });
+  }
+});
+
+// 특정 사용자 게시글 조회 시 익명 표시 처리
+app.get("/api/community/user-posts", async (req, res) => {
+  const { userId } = req.query;
+  if (!userId) return res.status(400).json({ success: false, message: "userId 필요" });
+
+  try {
+    const [rows] = await db
+      .promise()
+      .query("SELECT * FROM community_info WHERE userId = ? ORDER BY created_at DESC", [userId]);
+
+    const posts = rows.map(post => ({
+      ...post,
+      displayName: post.isAnonymous ? "익명" : post.userId
+    }));
+
+    res.json({ success: true, posts });
+  } catch (err) {
+    console.error("❌ 사용자 게시글 조회 오류:", err);
+    res.status(500).json({ success: false, message: "서버 오류 발생" });
+  }
+});
+
+
+// 게시글 작성
+app.post("/api/community/posts", async (req, res) => {
+  const token = req.headers.authorization?.split(" ")[1];
+  const { title, category, content, isAnonymous } = req.body;
+
+  if (!token) return res.status(401).json({ success: false, message: "토큰이 없습니다." });
+  if (!title || !category || !content) return res.status(400).json({ success: false, message: "필수 값이 누락되었습니다." });
+
+  try {
+    const decoded = jwt.verify(token, SECRET_KEY);
+    const userId = decoded.userId;
+
+    const [result] = await db
+      .promise()
+      .query(
+        "INSERT INTO community_info (userId, title, category, content, isAnonymous) VALUES (?, ?, ?, ?, ?)",
+        [userId, title, category, content, isAnonymous ? 1 : 0]
+      );
+
+    const post = {
+      id: result.insertId,
+      userId,
+      title,
+      category,
+      content,
+      isAnonymous: isAnonymous ? 1 : 0,
+      displayName: isAnonymous ? "익명" : userId,
+      created_at: new Date(),
+    };
+
+    res.status(201).json({ success: true, post });
+  } catch (err) {
+    console.error("❌ 커뮤니티 글 작성 오류:", err);
+    res.status(500).json({ success: false, message: "서버 오류 발생" });
+  }
+});
+
+// 게시글 삭제
+app.delete("/api/community/posts/:id", async (req, res) => {
+  const postId = req.params.id;
+
+  try {
+    const [result] = await db
+      .promise()
+      .query("DELETE FROM community_info WHERE id = ?", [postId]);
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ success: false, message: "삭제할 글이 없습니다." });
+    }
+
+    res.json({ success: true, message: "글이 삭제되었습니다." });
+  } catch (err) {
+    console.error("❌ 게시글 삭제 오류:", err);
+    res.status(500).json({ success: false, message: "서버 오류 발생" });
+  }
+});
+
+// 내 글 조회 API
+app.get("/api/community/my-posts", async (req, res) => {
+  const token = req.headers.authorization?.split(" ")[1];
+  if (!token) return res.status(401).json({ success: false, message: "토큰이 없습니다." });
+
+  try {
+    const decoded = jwt.verify(token, SECRET_KEY);
+    const userId = decoded.userId;
+
+    const [rows] = await db
+      .promise()
+      .query("SELECT * FROM community_info WHERE userId = ? ORDER BY created_at DESC", [userId]);
+
+    const posts = rows.map(post => ({
+      ...post,
+      displayName: post.userId // 항상 본인 아이디 또는 닉네임 표시
+    }));
+
+    res.json({ success: true, posts });
+  } catch (err) {
+    console.error("❌ 내 게시글 조회 오류:", err);
+    res.status(500).json({ success: false, message: "서버 오류 발생" });
+  }
+});
+
+// 게시글 단일 조회
+app.get("/api/community/posts/:id", async (req, res) => {
+  const postId = req.params.id;
+
+  try {
+    const [rows] = await db
+      .promise()
+      .query("SELECT * FROM community_info WHERE id = ?", [postId]);
+
+    if (rows.length === 0) {
+      return res.status(404).json({ success: false, message: "게시글을 찾을 수 없습니다." });
+    }
+
+    const post = {
+      ...rows[0],
+      displayName: rows[0].isAnonymous ? "익명" : rows[0].userId
+    };
+
+    res.json({ success: true, post });
+  } catch (err) {
+    console.error("❌ 게시글 단일 조회 오류:", err);
+    res.status(500).json({ success: false, message: "서버 오류 발생" });
+  }
+});
+
+
+/* -------------------- 댓글 -------------------- */
 
 // 댓글 목록 가져오기
 app.get("/api/community/posts/:postId/comments", async (req, res) => {
@@ -804,7 +908,12 @@ app.get("/api/community/posts/:postId/comments", async (req, res) => {
         [postId]
       );
 
-    res.json(rows); // 그대로 배열 보내기
+    const comments = rows.map(c => ({
+      ...c,
+      displayName: c.userId ? "익명" : c.userId // 여기서는 DB에 저장된 유저ID 기반, 필요 시 isAnonymous 컬럼 추가 가능
+    }));
+
+    res.json(comments);
   } catch (err) {
     console.error("❌ 댓글 목록 조회 오류:", err);
     res.status(500).json({ success: false, message: "서버 오류 발생" });
@@ -814,12 +923,10 @@ app.get("/api/community/posts/:postId/comments", async (req, res) => {
 // 댓글 작성
 app.post("/api/community/posts/:postId/comments", async (req, res) => {
   const { postId } = req.params;
-  const { userId, content } = req.body;
+  const { userId, content, isAnonymous } = req.body; // 익명 여부 추가
 
   if (!content) {
-    return res
-      .status(400)
-      .json({ success: false, message: "댓글 내용을 입력해주세요." });
+    return res.status(400).json({ success: false, message: "댓글 내용을 입력해주세요." });
   }
 
   try {
@@ -830,11 +937,11 @@ app.post("/api/community/posts/:postId/comments", async (req, res) => {
         [postId, userId || null, content]
       );
 
-    // 방금 저장된 댓글 정보 돌려주기
     res.status(201).json({
       id: result.insertId,
       post_id: Number(postId),
       userId: userId || null,
+      displayName: isAnonymous ? "익명" : userId, // 익명 표시
       content,
       created_at: new Date(),
     });
@@ -843,7 +950,6 @@ app.post("/api/community/posts/:postId/comments", async (req, res) => {
     res.status(500).json({ success: false, message: "서버 오류 발생" });
   }
 });
-
 
 /* -------------------- 서버 실행 -------------------- */
 
