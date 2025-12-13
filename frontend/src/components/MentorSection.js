@@ -16,7 +16,7 @@ const MentorSection = ({ selectedCategory, searchText }) => {
       const res = await axios.get("http://localhost:5000/api/mentors", {
         params: {
           category: selectedCategory,
-          search: tagSearch || searchText,
+          search: isTagSearch ? tagSearch : searchText,
           isTag: isTagSearch,
           sort,
           page,
@@ -30,6 +30,15 @@ const MentorSection = ({ selectedCategory, searchText }) => {
 
     fetchMentors();
   }, [selectedCategory, searchText, tagSearch, isTagSearch, sort, page]);
+
+  // 🔥 SearchBar 검색 시 태그 검색 해제
+  useEffect(() => {
+    if (searchText) {
+      setIsTagSearch(false);
+      setTagSearch("");
+      setPage(1);
+    }
+  }, [searchText]);
 
   const handleTagClick = (tag) => {
     setTagSearch(tag);

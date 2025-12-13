@@ -22,8 +22,24 @@ function App() {
 
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [selectedStatus, setSelectedStatus] = useState(null);
+
+  // 🔥 검색 상태
   const [searchText, setSearchText] = useState("");
-  const [refresh, setRefresh] = useState(0);
+  const [searchResetKey, setSearchResetKey] = useState(0); // ⭐ 강제 리셋 트리거
+
+  // 🔥 검색 실행
+  const handleSearch = (text) => {
+    setSearchText(text);
+    setSearchResetKey((prev) => prev + 1); // 태그 검색 해제 신호
+  };
+
+  // 🔥 전체 초기화 (로고 클릭 등)
+  const resetAll = () => {
+    setSearchText("");
+    setSelectedCategory(null);
+    setSelectedStatus(null);
+    setSearchResetKey((prev) => prev + 1);
+  };
 
   return (
     <Router>
@@ -34,18 +50,19 @@ function App() {
         setSelectedTab={setSelectedTab}
         setUserNickname={setUserNickname}
         setCurrentUserId={setCurrentUserId}
+        resetAll={resetAll} // ⭐ 추가
       />
 
       <Routes>
-        {/* 홈 페이지 */}
         <Route
           path="/"
           element={
             <>
               {(selectedTab === "study" || selectedTab === "mentoring") && (
                 <SearchBar
+                  key={searchResetKey} // 🔥 강제 리렌더
                   placeholder={selectedTab === "study" ? "스터디 검색..." : "멘토링 검색..."}
-                  onSearch={setSearchText}
+                  onSearch={handleSearch}
                 />
               )}
 
@@ -53,48 +70,11 @@ function App() {
 
               {selectedTab === "study" && (
                 <>
-                  <StudyBanner userNickname={userNickname} setRefresh={setRefresh} />
-                  <div className="w-[70%] mx-auto flex gap-2 mb-6 justify-start">
-                    {["모집중", "마감임박", "모집마감"].map((status) => {
-                      let bgColor = "";
-                      if (status === "모집중") bgColor = "bg-green-500";
-                      else if (status === "마감임박") bgColor = "bg-yellow-500";
-                      else if (status === "모집마감") bgColor = "bg-red-500";
-
-                      const isSelected = selectedStatus === status;
-
-                      return (
-                        <button
-                          key={status}
-                          onClick={() => setSelectedStatus(status)}
-                          className={`px-4 py-2 rounded-full font-medium border transition 
-                            ${isSelected
-                              ? `${bgColor} text-white border-none cursor-default`
-                              : "bg-white text-gray-700 border-gray-300 hover:bg-gray-100"
-                            }`}
-                        >
-                          {status}
-                        </button>
-                      );
-                    })}
-
-                    <button
-                      onClick={() => setSelectedStatus(null)}
-                      className={`px-4 py-2 rounded-full font-medium border transition 
-                        ${selectedStatus === null
-                          ? "bg-gray-500 text-white border-none cursor-default"
-                          : "bg-white text-gray-700 border-gray-300 hover:bg-gray-100"
-                        }`}
-                    >
-                      전체
-                    </button>
-                  </div>
-
+                  <StudyBanner userNickname={userNickname} />
                   <StudySection
                     selectedCategory={selectedCategory}
                     selectedStatus={selectedStatus}
                     searchText={searchText}
-                    refresh={refresh}
                     userNickname={userNickname}
                     currentUserId={currentUserId}
                   />
@@ -107,6 +87,7 @@ function App() {
                   <MentorSection
                     selectedCategory={selectedCategory}
                     searchText={searchText}
+                    resetKey={searchResetKey} // ⭐ 태그 검색 해제 신호
                   />
                 </>
               )}
@@ -114,11 +95,9 @@ function App() {
           }
         />
 
-        {/* 상세 페이지 */}
         <Route path="/study/:id" element={<StudyDetailPage />} />
         <Route path="/mentor/:id" element={<MentorDetailPage />} />
 
-        {/* 커뮤니티 */}
         <Route
           path="/community"
           element={
@@ -140,7 +119,6 @@ function App() {
           }
         />
 
-        {/* 마이페이지 접근 제한 */}
         <Route
           path="/mypage"
           element={isLoggedIn ? (
