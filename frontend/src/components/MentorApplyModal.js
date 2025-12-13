@@ -10,6 +10,7 @@ const CATEGORIES = [
 
 export default function MentorApplyModal({ onClose, userNickname }) {
     const [name, setName] = useState(userNickname || "");
+    const [title, setTitle] = useState("");
     const [position, setPosition] = useState("");
     const [experience, setExperience] = useState("");
     const [company, setCompany] = useState("");
@@ -21,7 +22,6 @@ export default function MentorApplyModal({ onClose, userNickname }) {
     const [description, setDescription] = useState("");
     const [loading, setLoading] = useState(false);
 
-    // 고정값
     const rating = 0;
     const reviews = 0;
 
@@ -65,13 +65,14 @@ export default function MentorApplyModal({ onClose, userNickname }) {
         if (loading) return;
 
         // 필수값 체크
-        if (!name || !position || !experience || !company || !price || !category || !tags || !image || !description) {
+        if (!name || !title || !position || !experience || !company || !price || !category || !tags || !image || !description) {
             alert("모든 필드를 입력해주세요.");
             return;
         }
 
         const newMentor = {
             name,
+            title,
             position,
             experience,
             company,
@@ -92,7 +93,7 @@ export default function MentorApplyModal({ onClose, userNickname }) {
             if (res.data?.success) {
                 alert("멘토 등록 성공!");
                 onClose();
-                window.location.reload();
+                window.location.reload(); // 간단하게 새로고침
             } else {
                 alert("멘토 등록 실패: " + (res.data?.message || "서버 오류"));
             }
@@ -112,6 +113,16 @@ export default function MentorApplyModal({ onClose, userNickname }) {
                 </div>
 
                 <div className="flex flex-col gap-4">
+                    <div>
+                        <label className="text-sm font-medium">멘토 제목</label>
+                        <input
+                            value={title}
+                            onChange={(e) => setTitle(e.target.value)}
+                            className="mt-1 w-full rounded-md border px-3 py-2 text-sm"
+                            placeholder="예: 프론트엔드 취업 마스터"
+                        />
+                    </div>
+
                     <div>
                         <label className="text-sm font-medium">멘토명</label>
                         <input
@@ -149,7 +160,7 @@ export default function MentorApplyModal({ onClose, userNickname }) {
                     </div>
 
                     <div>
-                        <label className="text-sm font-medium">가격(₩)</label>
+                        <label className="text-sm font-medium">가격(₩) / 1시간</label>
                         <input
                             type="number"
                             value={price}

@@ -8,13 +8,20 @@ const MentorCard = ({ mentor }) => {
       className="w-85 bg-white shadow-md rounded-2xl p-4 hover:shadow-xl transition cursor-pointer"
       onClick={() => navigate(`/mentor/${mentor.id}`)}
     >
+
+      {/* ⭐ mentor.title 표시 (볼드체) */}
+      <h3 className="mt-3 text-lg font-bold">{mentor.title}</h3>
+
       <img
         src={mentor.image}
         alt={mentor.name}
         className="w-full h-40 object-cover rounded-xl"
       />
 
-      <h3 className="mt-3 text-lg font-semibold">{mentor.name}</h3>
+
+
+      <p className="text-gray-800 text-sm font-semibold">{mentor.name}</p>
+
       <p className="text-gray-600 text-sm">
         {mentor.position} / {mentor.experience}
       </p>

@@ -3,6 +3,7 @@ USE mentoring;
 DROP TABLE IF EXISTS mentors;
 CREATE TABLE mentors (
     id INT AUTO_INCREMENT PRIMARY KEY,
+    title VARCHAR(255),
     name VARCHAR(50),
     position VARCHAR(50),
     experience VARCHAR(50),
@@ -16,6 +17,7 @@ CREATE TABLE mentors (
     description TEXT
 );
 INSERT INTO mentors (
+        title,
         name,
         position,
         experience,
@@ -28,6 +30,7 @@ INSERT INTO mentors (
         image
     )
 VALUES (
+        '프론트엔드 취업 마스터',
         '쿠마쿠마',
         '프론트엔드',
         '시니어(9년 이상)',
@@ -40,6 +43,7 @@ VALUES (
         'https://cdn.pixabay.com/photo/2021/08/05/10/34/man-6521725_1280.jpg'
     ),
     (
+        'IT 취업 올인원 코칭',
         'G‑Sam',
         '채용담당자',
         'Lead 레벨',
@@ -52,6 +56,7 @@ VALUES (
         'https://cdn.pixabay.com/photo/2016/11/14/03/16/person-1824144_1280.jpg'
     ),
     (
+        '제목',
         '그릿',
         '백엔드/서버 개발자',
         '주니어(1~3년)',
@@ -64,6 +69,7 @@ VALUES (
         'https://cdn.pixabay.com/photo/2017/01/12/14/57/woman-1979266_1280.jpg'
     ),
     (
+        '제목',
         '데브박',
         '풀스택 개발자',
         '중급(4~6년)',
@@ -76,6 +82,7 @@ VALUES (
         'https://cdn.pixabay.com/photo/2017/12/10/14/47/man-3019638_1280.jpg'
     ),
     (
+        '제목',
         '코드마스터',
         'AI 개발자',
         '시니어(10년 이상)',
@@ -88,6 +95,7 @@ VALUES (
         'https://cdn.pixabay.com/photo/2020/03/14/20/26/artificial-intelligence-4938926_1280.jpg'
     ),
     (
+        '제목',
         '하이테크',
         '데이터 분석가',
         '중급(4~6년)',
@@ -100,6 +108,7 @@ VALUES (
         'https://cdn.pixabay.com/photo/2018/01/06/10/34/person-3064075_1280.jpg'
     ),
     (
+        '제목',
         'UX천재',
         'UX/UI 디자이너',
         '시니어(8년 이상)',
@@ -112,6 +121,7 @@ VALUES (
         'https://cdn.pixabay.com/photo/2022/03/16/13/34/woman-7072636_1280.jpg'
     ),
     (
+        '제목',
         '리액트왕',
         '프론트엔드 개발자',
         '주니어(2~3년)',
@@ -124,6 +134,7 @@ VALUES (
         'https://cdn.pixabay.com/photo/2017/08/06/00/15/blond-2594050_1280.jpg'
     ),
     (
+        '제목',
         '백엔드신',
         '백엔드 개발자',
         '중급(5년)',
@@ -136,6 +147,7 @@ VALUES (
         'https://cdn.pixabay.com/photo/2016/03/26/22/13/man-1281679_1280.jpg'
     ),
     (
+        '제목',
         'AI혁신',
         'AI 엔지니어',
         '시니어(7년 이상)',

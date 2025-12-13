@@ -56,7 +56,7 @@ app.post("/api/upload", upload.single("image"), (req, res) => {
 const db = mysql.createConnection({
   host: "localhost",
   user: "root",
-  password: "hm09080908",
+  password: "test1234",
   database: "login_db",
 });
 
@@ -68,7 +68,7 @@ db.connect((err) => {
 const mentoringDB = mysql.createConnection({
   host: "localhost",
   user: "root",
-  password: "hm09080908",
+  password: "test1234",
   database: "mentoring",
 });
 
@@ -80,7 +80,7 @@ mentoringDB.connect((err) => {
 const studyDB = mysql.createConnection({
   host: "127.0.0.1",
   user: "root",
-  password: "hm09080908",
+  password: "test1234",
   database: "study_db",
   port: 3306,
 });
@@ -317,13 +317,13 @@ app.delete("/api/delete-user", async (req, res) => {
 
 /* -------------------- 멘토 API -------------------- */
 
-/* 멘토 목록 (경로 통일: /api/mentors) */
+/* 멘토 목록 + 검색 */
 app.get("/api/mentors", (req, res) => {
-  const search = req.query.search || "";     // 검색어
-  const category = req.query.category || ""; // 카테고리(전체일 경우 공백)
+  const search = req.query.search || "";
+  const category = req.query.category || "";
 
   let sql = "SELECT * FROM mentors WHERE 1=1";
-  let params = [];
+  const params = [];
 
   // 카테고리 필터
   if (category && category !== "전체") {
@@ -331,17 +331,23 @@ app.get("/api/mentors", (req, res) => {
     params.push(category);
   }
 
-  // 검색어 필터 (name, title, description에 동시 적용)
+  // 🔍 검색 필터 (title, position, tags)
   if (search.trim() !== "") {
-    sql += " AND (name LIKE ? OR position LIKE ? OR company LIKE ? OR description LIKE ?)";
+    sql += `
+      AND (
+        title LIKE ?
+        OR position LIKE ?
+        OR tags LIKE ?
+      )
+    `;
     const keyword = `%${search}%`;
-    params.push(keyword, keyword, keyword, keyword);
+    params.push(keyword, keyword, keyword);
   }
 
   mentoringDB.query(sql, params, (err, results) => {
     if (err) {
-      console.error("DB error:", err);
-      return res.status(500).send(err);
+      console.error("멘토 검색 오류:", err);
+      return res.status(500).json({ success: false });
     }
     res.json(results);
   });
@@ -374,6 +380,7 @@ app.get("/api/mentor/:id", (req, res) => {
 /* 멘토 등록 */
 app.post("/api/mentor", (req, res) => {
   let {
+    title,
     name,
     position,
     experience,
@@ -397,11 +404,12 @@ app.post("/api/mentor", (req, res) => {
 
   const sql = `
     INSERT INTO mentors 
-    (name, position, experience, company, rating, reviews, price, category, tags, image, description)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    (title, name, position, experience, company, rating, reviews, price, category, tags, image, description)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `;
 
   const values = [
+    title,
     name,
     position,
     experience,
