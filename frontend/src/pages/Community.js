@@ -144,7 +144,7 @@ export default function Community({ currentUserId, userNickname, isLoggedIn }) {
           />
           <button
             type="submit"
-            className="w-12 h-12 mr-2 rounded-full bg-[#27ae60] hover:bg-[#219150] flex items-center justify-center transition-colors"
+            className="w-12 h-12 mr-2 rounded-full bg-[#2fcf72] hover:bg-[#28b764] flex items-center justify-center transition-colors"
           >
             <img
               src="/img/search.svg"
