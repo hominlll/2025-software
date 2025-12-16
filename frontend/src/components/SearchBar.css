@@ -5,7 +5,7 @@
   width: 600px;
   height: 60px;
   border-radius: 40px;
-  margin: 15px auto;
+  margin: 24px auto;
   overflow: hidden;
   background-color: #fff;
   border: 1px solid #ccc;
@@ -26,7 +26,7 @@
   height: 50px;
   border: none;
   border-radius: 40px;
-  background-color: #2fcf72;
+  background-color: #27ae60;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -42,5 +42,5 @@
 }
 
 .search-button:hover {
-  background-color: #28b764;
+  background-color: #219150;
 }

@@ -40,8 +40,6 @@ const Header = ({
 
     if (path.startsWith('/community/')) {
       navigate('/community', { replace: true });
-    } else if (path.startsWith('/study/')) {
-      navigate('/', { replace: true });
     } else {
       navigate('/', { replace: true });
     }
@@ -50,7 +48,7 @@ const Header = ({
     window.location.reload();
   };
 
-  // 🔹 로고 / 멘토링 / 스터디 클릭 시 홈 이동
+  // 🔹 로고 / 멘토링 / 스터디 클릭
   const handleHomeClick = (tab) => {
     setSelectedTab(tab);
     navigate('/');
@@ -71,8 +69,7 @@ const Header = ({
         {/* 중앙 네비게이션 */}
         <div className="center-nav">
           <button
-            className={`center-button ${selectedTab === 'mentoring' ? 'active' : ''
-              }`}
+            className={`center-button ${selectedTab === 'mentoring' ? 'active' : ''}`}
             onClick={() => handleHomeClick('mentoring')}
           >
             <img src="/img/mentoring.png" alt="멘토링" className="center-icon" />
@@ -80,8 +77,7 @@ const Header = ({
           </button>
 
           <button
-            className={`center-button ${selectedTab === 'study' ? 'active' : ''
-              }`}
+            className={`center-button ${selectedTab === 'study' ? 'active' : ''}`}
             onClick={() => handleHomeClick('study')}
           >
             <img src="/img/study.png" alt="스터디" className="center-icon" />
@@ -89,15 +85,13 @@ const Header = ({
           </button>
 
           <button
-            className={`center-button ${selectedTab === 'community' ? 'active' : ''
-              }`}
-            onClick={() => navigate('/community')}
+            className={`center-button ${selectedTab === 'community' ? 'active' : ''}`}
+            onClick={() => {
+              setSelectedTab('community');
+              navigate('/community');
+            }}
           >
-            <img
-              src="/img/community.png"
-              alt="커뮤니티"
-              className="center-icon"
-            />
+            <img src="/img/community.png" alt="커뮤니티" className="center-icon" />
             <span>커뮤니티</span>
           </button>
         </div>
@@ -105,24 +99,15 @@ const Header = ({
         {/* 우측 메뉴 */}
         <nav className="nav">
           {!isLoggedIn ? (
-            <button
-              className="login-button"
-              onClick={() => setShowModal(true)}
-            >
+            <button className="login-button" onClick={() => setShowModal(true)}>
               로그인
             </button>
           ) : (
             <>
-              <button
-                className="mypage-button"
-                onClick={() => navigate('/mypage')}
-              >
+              <button className="mypage-button" onClick={() => navigate('/mypage')}>
                 내 정보
               </button>
-              <button
-                className="logout-button"
-                onClick={handleLogout}
-              >
+              <button className="logout-button" onClick={handleLogout}>
                 로그아웃
               </button>
             </>
