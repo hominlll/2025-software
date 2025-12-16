@@ -5,14 +5,26 @@ import axios from "axios";
 export default function MentorEnrollPage() {
     const { id } = useParams();
     const [mentor, setMentor] = useState(null);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        axios.get(`http://localhost:5000/api/mentor/${id}`).then((res) => {
-            if (res.data.success) setMentor(res.data.mentor);
-        });
+        axios
+            .get(`http://localhost:5000/api/mentor/${id}`)
+            .then((res) => {
+                if (res.data.success) {
+                    setMentor(res.data.mentor);
+                }
+            })
+            .finally(() => setLoading(false));
     }, [id]);
 
-    if (!mentor) return null;
+    if (loading) {
+        return <div className="p-10 text-center">신청 페이지 불러오는 중...</div>;
+    }
+
+    if (!mentor) {
+        return <div className="p-10 text-center">멘토 정보를 찾을 수 없습니다.</div>;
+    }
 
     return (
         <div className="max-w-4xl mx-auto p-10">
@@ -27,7 +39,7 @@ export default function MentorEnrollPage() {
                 </div>
 
                 <p className="text-2xl font-bold">
-                    ₩{mentor.price.toLocaleString()}
+                    ₩{mentor.price.toLocaleString() + ' / 1시간'}
                 </p>
             </div>
 

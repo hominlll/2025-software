@@ -12,6 +12,7 @@ import MyPage from "./pages/MyPage";
 import Community from "./pages/Community";
 import PostDetail from "./components/PostDetail";
 import MentorDetailPage from "./pages/MentorDetailPage";
+import MentorEnrollPage from "./pages/MentorEnrollPage";
 import StudyDetailPage from "./pages/StudyDetailPage";
 
 function App() {
@@ -117,6 +118,12 @@ function App() {
         {/* 상세 페이지 */}
         <Route path="/study/:id" element={<StudyDetailPage />} />
         <Route path="/mentor/:id" element={<MentorDetailPage />} />
+
+        {/* 멘토링 신청 페이지 */}
+        <Route
+          path="/mentor/:id/enrollment"
+          element={<MentorEnrollPage />}
+        />
 
         {/* 커뮤니티 */}
         <Route

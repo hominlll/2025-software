@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 
+const DEFAULT_IMAGE = "/img/logo.png";
+
 export default function MentorDetailPage() {
     const { id } = useParams();
     const navigate = useNavigate();
@@ -22,11 +24,11 @@ export default function MentorDetailPage() {
 
     return (
         <div className="max-w-5xl mx-auto p-8">
-
-            {/* 🔹 상단 프로필 카드 (기존 디자인 유지) */}
+            {/* 🔹 상단 프로필 카드 */}
             <div className="flex gap-10 items-center bg-white shadow-md rounded-2xl p-8">
                 <img
-                    src={mentor.image}
+                    src={mentor.image || DEFAULT_IMAGE}
+                    onError={(e) => (e.target.src = DEFAULT_IMAGE)}
                     alt={mentor.name}
                     className="w-48 h-48 rounded-2xl object-cover"
                 />
@@ -51,7 +53,7 @@ export default function MentorDetailPage() {
                     </p>
 
                     <div className="flex flex-wrap gap-2 mt-3">
-                        {mentor.tags.split(",").map((tag) => (
+                        {(mentor.tags || "").split(",").map((tag) => (
                             <span
                                 key={tag}
                                 className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm"
