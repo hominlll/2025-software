@@ -1,5 +1,7 @@
 import { useNavigate } from "react-router-dom";
 
+const DEFAULT_IMAGE = "/img/logo.png";
+
 const MentorCard = ({ mentor, onTagClick }) => {
   const navigate = useNavigate();
 
@@ -9,7 +11,8 @@ const MentorCard = ({ mentor, onTagClick }) => {
       onClick={() => navigate(`/mentor/${mentor.id}`)}
     >
       <img
-        src={mentor.image}
+        src={mentor.image || DEFAULT_IMAGE}
+        onError={(e) => (e.target.src = DEFAULT_IMAGE)}
         alt={mentor.name}
         className="w-full h-40 object-cover rounded-xl"
       />

@@ -13,8 +13,8 @@ const EXPERIENCES = [
     "시니어(5~8년 이상)",
 ];
 
-// 기본 이미지 (public 폴더)
-const DEFAULT_IMAGE = "/imp/logo.png";
+// ✅ frontend 기본 이미지
+const DEFAULT_IMAGE = "/img/logo.png";
 
 export default function MentorApplyModal({ onClose, userNickname }) {
     const [name, setName] = useState(userNickname || "");
@@ -25,7 +25,7 @@ export default function MentorApplyModal({ onClose, userNickname }) {
     const [price, setPrice] = useState("");
     const [category, setCategory] = useState("");
     const [tags, setTags] = useState("");
-    const [image, setImage] = useState(DEFAULT_IMAGE);
+    const [image, setImage] = useState(DEFAULT_IMAGE); // ⭐ 기본 이미지
     const [imageFile, setImageFile] = useState(null);
     const [description, setDescription] = useState("");
     const [mentoringMethod, setMentoringMethod] = useState("");
@@ -64,7 +64,6 @@ export default function MentorApplyModal({ onClose, userNickname }) {
             if (res.data && res.data.url) {
                 setImage(res.data.url);
             } else {
-                alert("이미지 업로드 실패");
                 setImage(DEFAULT_IMAGE);
             }
         } catch (err) {
@@ -77,7 +76,6 @@ export default function MentorApplyModal({ onClose, userNickname }) {
     const handleSubmit = async () => {
         if (loading) return;
 
-        // ❗ image는 필수 아님
         if (
             !name ||
             !title ||
@@ -105,7 +103,7 @@ export default function MentorApplyModal({ onClose, userNickname }) {
             price: Number(price),
             category,
             tags: tags.trim(),
-            image: image || DEFAULT_IMAGE,
+            image: image || DEFAULT_IMAGE, // ⭐ 안전장치
             description,
             mentoringMethod,
         };
@@ -168,7 +166,6 @@ export default function MentorApplyModal({ onClose, userNickname }) {
                         />
                     </div>
 
-                    {/* 🔥 경력 select */}
                     <div>
                         <label className="text-sm font-medium">경력</label>
                         <select
@@ -192,7 +189,6 @@ export default function MentorApplyModal({ onClose, userNickname }) {
                         />
                     </div>
 
-                    {/* 🔥 가격 step=1000 */}
                     <div>
                         <label className="text-sm font-medium">가격(₩) / 1시간</label>
                         <input
@@ -227,9 +223,8 @@ export default function MentorApplyModal({ onClose, userNickname }) {
                         />
                     </div>
 
-                    {/* 🔥 이미지 선택 (선택사항) */}
                     <div>
-                        <label className="text-sm font-medium">프로필 사진 업로드 (선택)</label>
+                        <label className="text-sm font-medium">프로필 사진 업로드 (미첨부시 로고 대체)</label>
                         <input
                             type="file"
                             accept="image/*"
@@ -253,7 +248,6 @@ export default function MentorApplyModal({ onClose, userNickname }) {
                         />
                     </div>
 
-                    {/* 🔥 멘토링 방식 */}
                     <div>
                         <label className="text-sm font-medium">멘토링 방식</label>
                         <textarea

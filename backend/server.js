@@ -463,14 +463,14 @@ app.post("/api/mentor", (req, res) => {
     reviews,
   } = req.body;
 
-  const DEFAULT_IMAGE = "/logo.png";
+  const DEFAULT_IMAGE = "/logo.png"; // backend/public/logo.png
 
   rating = rating ?? 0;
   reviews = reviews ?? 0;
   tags = tags ?? "";
   description = description ?? "";
 
-  // ⭐ 핵심
+  // ⭐ 이미지 미첨부 시 기본 이미지
   image = image && image.trim() !== "" ? image : DEFAULT_IMAGE;
 
   const sql = `
@@ -505,8 +505,10 @@ app.post("/api/mentor", (req, res) => {
         message: "멘토 등록 완료!",
         id: result.insertId,
       });
-    });
+    }
+  );
 });
+
 
 
 /* -------------------- 스터디 API -------------------- */
