@@ -34,6 +34,9 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage });
 
+// 기본 이미지(public) 정적 제공
+app.use(express.static("public"));
+
 // 정적 이미지 제공
 app.use("/uploads", express.static("uploads"));
 
@@ -56,7 +59,7 @@ app.post("/api/upload", upload.single("image"), (req, res) => {
 const db = mysql.createConnection({
   host: "localhost",
   user: "root",
-  password: "hm09080908",
+  password: "test1234",
   database: "login_db",
 });
 
@@ -68,7 +71,7 @@ db.connect((err) => {
 const mentoringDB = mysql.createConnection({
   host: "localhost",
   user: "root",
-  password: "hm09080908",
+  password: "test1234",
   database: "mentoring",
 });
 
@@ -80,7 +83,7 @@ mentoringDB.connect((err) => {
 const studyDB = mysql.createConnection({
   host: "127.0.0.1",
   user: "root",
-  password: "hm09080908",
+  password: "test1234",
   database: "study_db",
   port: 3306,
 });
@@ -444,7 +447,6 @@ app.get("/api/mentor/:id", (req, res) => {
   );
 });
 
-/* 멘토 등록 */
 app.post("/api/mentor", (req, res) => {
   let {
     title,
@@ -461,13 +463,15 @@ app.post("/api/mentor", (req, res) => {
     reviews,
   } = req.body;
 
-  // 기본값 처리
+  const DEFAULT_IMAGE = "/logo.png";
+
   rating = rating ?? 0;
   reviews = reviews ?? 0;
-
   tags = tags ?? "";
-  image = image ?? "";
   description = description ?? "";
+
+  // ⭐ 핵심
+  image = image && image.trim() !== "" ? image : DEFAULT_IMAGE;
 
   const sql = `
     INSERT INTO mentors 
@@ -475,32 +479,33 @@ app.post("/api/mentor", (req, res) => {
     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `;
 
-  const values = [
-    title,
-    name,
-    position,
-    experience,
-    company,
-    rating,
-    reviews,
-    price,
-    category,
-    tags,
-    image,
-    description,
-  ];
-
-  mentoringDB.query(sql, values, (err, result) => {
-    if (err) {
-      console.error("멘토 등록 오류:", err);
-      return res.json({ success: false, message: "DB 오류" });
-    }
-    res.json({
-      success: true,
-      message: "멘토 등록 완료!",
-      id: result.insertId,
+  mentoringDB.query(
+    sql,
+    [
+      title,
+      name,
+      position,
+      experience,
+      company,
+      rating,
+      reviews,
+      price,
+      category,
+      tags,
+      image,
+      description,
+    ],
+    (err, result) => {
+      if (err) {
+        console.error("멘토 등록 오류:", err);
+        return res.json({ success: false, message: "DB 오류" });
+      }
+      res.json({
+        success: true,
+        message: "멘토 등록 완료!",
+        id: result.insertId,
+      });
     });
-  });
 });
 
 

@@ -1,4 +1,3 @@
-// frontend/src/components/MentorApplyModal.js
 import React, { useState } from "react";
 import axios from "axios";
 
@@ -7,6 +6,15 @@ const CATEGORIES = [
     '디자인', '기계', '전기·전자', '컴퓨터공학',
     '화학', '생명', '면접',
 ];
+
+const EXPERIENCES = [
+    "주니어(1~3년)",
+    "미들(3~5년)",
+    "시니어(5~8년 이상)",
+];
+
+// 기본 이미지 (public 폴더)
+const DEFAULT_IMAGE = "/imp/logo.png";
 
 export default function MentorApplyModal({ onClose, userNickname }) {
     const [name, setName] = useState(userNickname || "");
@@ -17,15 +25,16 @@ export default function MentorApplyModal({ onClose, userNickname }) {
     const [price, setPrice] = useState("");
     const [category, setCategory] = useState("");
     const [tags, setTags] = useState("");
-    const [image, setImage] = useState("");
+    const [image, setImage] = useState(DEFAULT_IMAGE);
     const [imageFile, setImageFile] = useState(null);
     const [description, setDescription] = useState("");
+    const [mentoringMethod, setMentoringMethod] = useState("");
     const [loading, setLoading] = useState(false);
 
     const rating = 0;
     const reviews = 0;
 
-    // 이미지 업로드
+    // 이미지 업로드 (선택)
     const handleImageChange = async (e) => {
         const file = e.target.files[0];
         if (!file) return;
@@ -46,26 +55,41 @@ export default function MentorApplyModal({ onClose, userNickname }) {
         formData.append("image", file);
 
         try {
-            const res = await axios.post("http://localhost:5000/api/upload", formData, {
-                headers: { "Content-Type": "multipart/form-data" },
-            });
+            const res = await axios.post(
+                "http://localhost:5000/api/upload",
+                formData,
+                { headers: { "Content-Type": "multipart/form-data" } }
+            );
 
             if (res.data && res.data.url) {
                 setImage(res.data.url);
             } else {
                 alert("이미지 업로드 실패");
+                setImage(DEFAULT_IMAGE);
             }
         } catch (err) {
             console.error("이미지 업로드 오류:", err);
             alert("이미지 업로드 실패 (서버 오류)");
+            setImage(DEFAULT_IMAGE);
         }
     };
 
     const handleSubmit = async () => {
         if (loading) return;
 
-        // 필수값 체크
-        if (!name || !title || !position || !experience || !company || !price || !category || !tags || !image || !description) {
+        // ❗ image는 필수 아님
+        if (
+            !name ||
+            !title ||
+            !position ||
+            !experience ||
+            !company ||
+            !price ||
+            !category ||
+            !tags ||
+            !description ||
+            !mentoringMethod
+        ) {
             alert("모든 필드를 입력해주세요.");
             return;
         }
@@ -81,21 +105,25 @@ export default function MentorApplyModal({ onClose, userNickname }) {
             price: Number(price),
             category,
             tags: tags.trim(),
-            image,
-            description
+            image: image || DEFAULT_IMAGE,
+            description,
+            mentoringMethod,
         };
 
         try {
             setLoading(true);
 
-            const res = await axios.post("http://localhost:5000/api/mentor", newMentor);
+            const res = await axios.post(
+                "http://localhost:5000/api/mentor",
+                newMentor
+            );
 
             if (res.data?.success) {
                 alert("멘토 등록 성공!");
                 onClose();
-                window.location.reload(); // 간단하게 새로고침
+                window.location.reload();
             } else {
-                alert("멘토 등록 실패: " + (res.data?.message || "서버 오류"));
+                alert("멘토 등록 실패");
             }
         } catch (err) {
             console.error("멘토 등록 오류:", err);
@@ -119,7 +147,6 @@ export default function MentorApplyModal({ onClose, userNickname }) {
                             value={title}
                             onChange={(e) => setTitle(e.target.value)}
                             className="mt-1 w-full rounded-md border px-3 py-2 text-sm"
-                            placeholder="예: 프론트엔드 취업 마스터"
                         />
                     </div>
 
@@ -141,13 +168,19 @@ export default function MentorApplyModal({ onClose, userNickname }) {
                         />
                     </div>
 
+                    {/* 🔥 경력 select */}
                     <div>
                         <label className="text-sm font-medium">경력</label>
-                        <input
+                        <select
                             value={experience}
                             onChange={(e) => setExperience(e.target.value)}
                             className="mt-1 w-full rounded-md border px-3 py-2 text-sm"
-                        />
+                        >
+                            <option value="">경력 선택</option>
+                            {EXPERIENCES.map((exp) => (
+                                <option key={exp} value={exp}>{exp}</option>
+                            ))}
+                        </select>
                     </div>
 
                     <div>
@@ -159,10 +192,12 @@ export default function MentorApplyModal({ onClose, userNickname }) {
                         />
                     </div>
 
+                    {/* 🔥 가격 step=1000 */}
                     <div>
                         <label className="text-sm font-medium">가격(₩) / 1시간</label>
                         <input
                             type="number"
+                            step={1000}
                             value={price}
                             onChange={(e) => setPrice(e.target.value)}
                             className="mt-1 w-full rounded-md border px-3 py-2 text-sm"
@@ -189,21 +224,23 @@ export default function MentorApplyModal({ onClose, userNickname }) {
                             value={tags}
                             onChange={(e) => setTags(e.target.value)}
                             className="mt-1 w-full rounded-md border px-3 py-2 text-sm"
-                            placeholder="예: Java,코딩 테스트,면접"
                         />
                     </div>
 
+                    {/* 🔥 이미지 선택 (선택사항) */}
                     <div>
-                        <label className="text-sm font-medium">이미지 업로드</label>
+                        <label className="text-sm font-medium">프로필 사진 업로드 (선택)</label>
                         <input
                             type="file"
                             accept="image/*"
                             onChange={handleImageChange}
                             className="mt-1 w-full rounded-md border px-3 py-2 text-sm"
                         />
-                        {image && (
-                            <img src={image} alt="preview" className="mt-3 h-32 w-32 object-cover rounded-lg border" />
-                        )}
+                        <img
+                            src={image}
+                            alt="preview"
+                            className="mt-3 h-32 w-32 object-cover rounded-lg border"
+                        />
                     </div>
 
                     <div>
@@ -213,6 +250,18 @@ export default function MentorApplyModal({ onClose, userNickname }) {
                             onChange={(e) => setDescription(e.target.value)}
                             rows={4}
                             className="mt-1 w-full rounded-md border px-3 py-2 text-sm resize-none"
+                        />
+                    </div>
+
+                    {/* 🔥 멘토링 방식 */}
+                    <div>
+                        <label className="text-sm font-medium">멘토링 방식</label>
+                        <textarea
+                            value={mentoringMethod}
+                            onChange={(e) => setMentoringMethod(e.target.value)}
+                            rows={3}
+                            className="mt-1 w-full rounded-md border px-3 py-2 text-sm resize-none"
+                            placeholder="예: Zoom 비대면 / 1:1 / 과제 피드백 포함"
                         />
                     </div>
                 </div>
