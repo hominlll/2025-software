@@ -64,7 +64,7 @@ const LoginModal = ({ onClose, onLoginSuccess }) => {
           break;
 
         case "findPassword":
-          setResultMessage(`🔐 비밀번호는 '${result.password}' 입니다.`);
+          setResultMessage(`🔐 ${result.password} \n관리자에게 문의해주세요.`);
           break;
 
         default:
@@ -152,7 +152,7 @@ const LoginModal = ({ onClose, onLoginSuccess }) => {
         <img src="/img/logo.png" alt="로고" className="modal-logo" />
         {resultMessage && (
           <p className={`result-message ${resultMessage.includes("✅") ? "success" :
-              resultMessage.includes("❌") || resultMessage.includes("⚠️") ? "error" : ""
+            resultMessage.includes("❌") || resultMessage.includes("⚠️") ? "error" : ""
             }`}>
             {resultMessage}
           </p>

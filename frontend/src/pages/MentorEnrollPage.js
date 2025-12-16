@@ -41,7 +41,7 @@ export default function MentorEnrollPage() {
                     onClick={() => alert("멘토링 신청이 완료되었습니다!")}
                     className="mt-6 w-full bg-emerald-500 hover:bg-emerald-600 text-white py-3 rounded-xl font-semibold"
                 >
-                    신청 완료
+                    신청하기
                 </button>
             </div>
         </div>

@@ -10,19 +10,17 @@ const StudyCard = ({ study }) => {
 
   const remainingSpots = maxPeople - participantsCount;
 
-  // 오늘 날짜만 비교하도록 변경
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
   const deadline = study.deadline ? new Date(study.deadline) : null;
-  const deadlineDate = deadline ? new Date(deadline) : null;
 
   let status = "모집중";
-  if (remainingSpots <= 0 || (deadlineDate && deadlineDate < today)) {
+  if (remainingSpots <= 0 || (deadline && deadline < today)) {
     status = "모집완료";
   } else if (
     remainingSpots <= 1 ||
-    (deadlineDate && (deadlineDate - today) / (1000 * 60 * 60 * 24) <= 1)
+    (deadline && (deadline - today) / (1000 * 60 * 60 * 24) <= 1)
   ) {
     status = "모집마감임박";
   }
@@ -31,63 +29,64 @@ const StudyCard = ({ study }) => {
   if (status === "모집마감임박") tags.push("마감임박");
   if (status === "모집완료") tags.push("모집마감");
 
-  const handleClick = () => {
-    navigate(`/study/${study.id}`);
-  };
-
   return (
     <div
-      onClick={handleClick}
-      className={`relative rounded-2xl shadow-md p-4 w-[260px] h-[200px] flex flex-col justify-between bg-white
-                  hover:shadow-lg transition-all duration-200
-                  cursor-pointer`}
+      onClick={() => navigate(`/study/${study.id}`)}
+      className="
+        relative
+        w-full
+        min-h-[200px]
+        rounded-2xl
+        bg-white
+        p-4
+        shadow-md
+        flex flex-col justify-between
+        hover:shadow-lg
+        transition-all
+        cursor-pointer
+      "
     >
       {status === "모집완료" && (
-        <div className="absolute inset-0 bg-gray-400 opacity-50 rounded-2xl pointer-events-none z-10" />
+        <div className="absolute inset-0 bg-gray-400 opacity-50 rounded-2xl z-10" />
       )}
 
-      <div className="flex flex-col justify-between h-full z-20 relative">
-        <div className="flex items-center gap-2 mb-2">
-          <span className="text-xs bg-blue-100 px-3 py-1 rounded-full text-gray-600">
+      <div className="relative z-20 flex flex-col h-full">
+        <div className="flex flex-wrap gap-1 mb-2">
+          <span className="text-xs bg-blue-100 px-3 py-1 rounded-full">
             스터디
           </span>
-          <span className="text-xs bg-green-100 px-3 py-1 rounded-full text-gray-600">
-            {study.category || "정보 없음"}
+          <span className="text-xs bg-green-100 px-3 py-1 rounded-full">
+            {study.category}
           </span>
-          {tags.map((tag) => (
+          {tags.map(tag => (
             <span
               key={tag}
-              className={`text-xs px-3 py-1 rounded-full ${
-                tag === "마감임박"
+              className={`text-xs px-3 py-1 rounded-full ${tag === "마감임박"
                   ? "bg-yellow-100 text-yellow-700"
                   : "bg-red-100 text-red-700"
-              }`}
+                }`}
             >
               {tag}
             </span>
           ))}
         </div>
 
-        <div className="flex justify-between items-center mb-1 text-sm text-gray-500">
+        <div className="flex justify-between text-sm text-gray-500 mb-1">
           <span>
             마감일 | {deadline ? deadline.toLocaleDateString() : "미정"}
           </span>
           <span>
-            👥 {participantsCount} / {maxPeople}명
+            👥 {participantsCount} / {maxPeople}
           </span>
         </div>
 
-        <h3 className="font-semibold text-base mb-2 leading-6">
-          {study.studyName || "제목 없음"}
+        <h3 className="font-semibold text-base leading-6 mb-2 line-clamp-2">
+          {study.studyName}
         </h3>
 
-        <div className="flex justify-between items-center text-gray-500 text-sm pt-3 border-t">
-          <p className="text-sm text-gray-600 mb-0">
-            👤 {study.writer || study.userId}
-          </p>
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-1">👁️ {views}</div>
-          </div>
+        <div className="mt-auto flex justify-between items-center text-sm text-gray-500 pt-3 border-t">
+          <span>👤 {study.writer}</span>
+          <span>👁️ {views}</span>
         </div>
       </div>
     </div>
