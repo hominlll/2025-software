@@ -509,6 +509,34 @@ app.post("/api/mentor", (req, res) => {
   );
 });
 
+// 멘토링 신청
+app.post("/api/mentor/apply", async (req, res) => {
+  const token = req.headers.authorization?.split(" ")[1];
+  if (!token) return res.status(401).json({ success: false, message: "로그인이 필요합니다." });
+
+  try {
+    const decoded = jwt.verify(token, SECRET_KEY);
+    const userId = decoded.userId;
+
+    const { mentorId, date, time, message, price } = req.body;
+
+    if (!mentorId || !date || !time) {
+      return res.json({ success: false, message: "필수 정보 누락" });
+    }
+
+    await mentoringDB.promise().query(
+      `INSERT INTO mentor_applications
+       (mentorId, userId, date, time, message, price)
+       VALUES (?, ?, ?, ?, ?, ?)`,
+      [mentorId, userId, date, time, message, price]
+    );
+
+    res.json({ success: true, message: "멘토링 신청 완료!" });
+  } catch (err) {
+    console.error("멘토링 신청 오류:", err);
+    res.status(500).json({ success: false });
+  }
+});
 
 
 /* -------------------- 스터디 API -------------------- */

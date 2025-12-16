@@ -22,6 +22,17 @@ CREATE TABLE mentors (
     mentoringMethod TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+CREATE TABLE mentor_applications (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    mentorId INT NOT NULL,
+    userId VARCHAR(50) NOT NULL,
+    date DATE NOT NULL,
+    time VARCHAR(20) NOT NULL,
+    message TEXT,
+    price INT NOT NULL,
+    status ENUM('대기', '승인', '거절') DEFAULT '대기',
+    createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
 INSERT INTO mentors (
         title,
         name,

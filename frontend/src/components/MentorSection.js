@@ -89,8 +89,8 @@ const MentorSection = ({ selectedCategory, searchText }) => {
             key={i}
             onClick={() => setPage(i + 1)}
             className={`px-4 py-2 rounded-md text-sm ${page === i + 1
-                ? "bg-emerald-500 text-white"
-                : "bg-gray-200 hover:bg-gray-300"
+              ? "bg-emerald-500 text-white"
+              : "bg-gray-200 hover:bg-gray-300"
               }`}
           >
             {i + 1}
