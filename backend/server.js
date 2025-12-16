@@ -447,6 +447,7 @@ app.get("/api/mentor/:id", (req, res) => {
   );
 });
 
+// 멘토 등록
 app.post("/api/mentor", (req, res) => {
   let {
     title,
@@ -459,6 +460,7 @@ app.post("/api/mentor", (req, res) => {
     tags,
     image,
     description,
+    mentoringMethod, // 🔹 추가
     rating,
     reviews,
   } = req.body;
@@ -469,14 +471,15 @@ app.post("/api/mentor", (req, res) => {
   reviews = reviews ?? 0;
   tags = tags ?? "";
   description = description ?? "";
+  mentoringMethod = mentoringMethod ?? ""; // 🔹 기본값 처리
 
   // ⭐ 이미지 미첨부 시 기본 이미지
   image = image && image.trim() !== "" ? image : DEFAULT_IMAGE;
 
   const sql = `
     INSERT INTO mentors 
-    (title, name, position, experience, company, rating, reviews, price, category, tags, image, description)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    (title, name, position, experience, company, rating, reviews, price, category, tags, image, description, mentoringMethod)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `;
 
   mentoringDB.query(
@@ -494,6 +497,7 @@ app.post("/api/mentor", (req, res) => {
       tags,
       image,
       description,
+      mentoringMethod, // 🔹 추가
     ],
     (err, result) => {
       if (err) {
@@ -508,6 +512,7 @@ app.post("/api/mentor", (req, res) => {
     }
   );
 });
+
 
 // 멘토링 신청
 app.post("/api/mentor/apply", async (req, res) => {

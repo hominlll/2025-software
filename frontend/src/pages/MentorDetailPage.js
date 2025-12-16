@@ -86,11 +86,17 @@ export default function MentorDetailPage() {
             {/* 🔹 멘토링 방식 */}
             <div className="mt-10 bg-white shadow-md rounded-2xl p-8">
                 <h2 className="text-2xl font-bold mb-4">멘토링 방식</h2>
-                <ul className="list-disc pl-5 text-gray-700 leading-7">
-                    <li>사전 질문을 기반으로 맞춤형 멘토링</li>
-                    <li>실무 중심 코드 리뷰 및 커리어 상담</li>
-                    <li>Zoom / Google Meet을 통한 비대면 진행</li>
-                </ul>
+                {mentor.mentoringMethod ? (
+                    <p className="text-gray-700 leading-7 whitespace-pre-line">
+                        {mentor.mentoringMethod}
+                    </p>
+                ) : (
+                    <ul className="list-disc pl-5 text-gray-700 leading-7">
+                        <li>사전 질문을 기반으로 맞춤형 멘토링</li>
+                        <li>실무 중심 코드 리뷰 및 커리어 상담</li>
+                        <li>Zoom / Google Meet을 통한 비대면 진행</li>
+                    </ul>
+                )}
             </div>
 
             {/* 🔹 리뷰 */}
