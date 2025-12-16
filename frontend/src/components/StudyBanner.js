@@ -1,9 +1,17 @@
 import React, { useState } from "react";
 import StudyCreateModal from "./StudyCreateModal";
-import StudySection from "./StudySection";
+
 
 const StudyBanner = ({ userNickname, setRefresh }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const handleCreateClick = () => {
+    if (!userNickname) {
+      alert("로그인 후 이용해주세요.");
+      return;
+    }
+    setIsModalOpen(true);
+  };
 
   const handleCloseModal = (shouldRefresh = false) => {
     setIsModalOpen(false);
@@ -26,7 +34,7 @@ const StudyBanner = ({ userNickname, setRefresh }) => {
           </p>
           <button
             className="mt-6 rounded-full bg-blue-500 px-6 py-2 text-sm font-semibold text-white shadow-md transition hover:bg-blue-600 hover:shadow-lg active:translate-y-[1px]"
-            onClick={() => setIsModalOpen(true)}
+            onClick={handleCreateClick}
           >
             스터디 만들기
           </button>
