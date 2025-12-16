@@ -97,27 +97,7 @@ export default function MentorDetailPage() {
                         <li>Zoom / Google Meet을 통한 비대면 진행</li>
                     </ul>
                 )}
-            </div>
 
-            {/* 🔹 리뷰 */}
-            <div className="mt-10 bg-white shadow-md rounded-2xl p-8">
-                <h2 className="text-2xl font-bold mb-4">멘토링 리뷰</h2>
-
-                <div className="flex flex-col gap-5">
-                    <div className="p-4 bg-gray-50 rounded-xl shadow-sm">
-                        <p className="font-semibold">⭐ 5.0</p>
-                        <p className="text-gray-600 mt-1">
-                            정말 많은 도움이 되었습니다! 실무적인 조언이 최고예요.
-                        </p>
-                    </div>
-
-                    <div className="p-4 bg-gray-50 rounded-xl shadow-sm">
-                        <p className="font-semibold">⭐ 4.8</p>
-                        <p className="text-gray-600 mt-1">
-                            방향성을 잡는 데 큰 도움이 되었습니다.
-                        </p>
-                    </div>
-                </div>
             </div>
         </div>
     );

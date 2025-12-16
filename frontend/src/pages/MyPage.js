@@ -45,7 +45,7 @@ const MyPage = ({ userNickname, setUserNickname, currentUserId }) => {
 
     // 커뮤니티 글 정보
     axios.get("http://localhost:5000/api/community/my-posts", { headers: { Authorization: `Bearer ${token}` } })
-      .then(res => { if(res.data.success) setMyPosts(res.data.posts || []); })
+      .then(res => { if (res.data.success) setMyPosts(res.data.posts || []); })
       .catch(() => setMyPosts([]))
       .finally(() => setLoading(false));
   }, []);
@@ -111,18 +111,18 @@ const MyPage = ({ userNickname, setUserNickname, currentUserId }) => {
     axios.delete(`http://localhost:5000/api/community/posts/${postId}`, {
       headers: { Authorization: `Bearer ${token}` } // JWT로 본인 글 확인
     })
-    .then(res => {
-      if(res.data.success) {
-        alert("글이 삭제되었습니다.");
-        setMyPosts(prev => prev.filter(p => p.id !== postId));
-      } else {
-        alert(res.data.message || "삭제 실패");
-      }
-    })
-    .catch(err => {
-      console.error(err);
-      alert("삭제 실패");
-    });
+      .then(res => {
+        if (res.data.success) {
+          alert("글이 삭제되었습니다.");
+          setMyPosts(prev => prev.filter(p => p.id !== postId));
+        } else {
+          alert(res.data.message || "삭제 실패");
+        }
+      })
+      .catch(err => {
+        console.error(err);
+        alert("삭제 실패");
+      });
   };
 
   if (loading) return <p className="text-center mt-20">불러오는 중...</p>;
